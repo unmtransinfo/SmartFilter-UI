@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { MatchResult } from "../App";
-import initRDKitModule from "@rdkit/rdkit";
+import React, { useEffect, useState } from 'react';
+import initRDKitModule from '@rdkit/rdkit';
+import { MatchResult } from '../App';
 
 type Props = {
   matchCounts: MatchResult[];
@@ -8,93 +8,119 @@ type Props = {
   totalMatched: number;
 };
 
-const SmartsFilterResult: React.FC<Props> = ({
-  matchCounts,
-  mode,
-  totalMatched,
-}) => {
+const SmartsFilterResult: React.FC<Props> = ({ matchCounts, mode, totalMatched }) => {
   const [RDKit, setRDKit] = useState<any>(null);
+  const [showMatches, setShowMatches] = useState(true);
+  const [includePasses, setIncludePasses] = useState(true);
+  const [includeFails, setIncludeFails] = useState(true);
+  const [depict, setDepict] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const loadRDKit = async () => {
-      try {
-        const RDKitModule = await initRDKitModule({
-          locateFile: () => "/RDKit_minimal.wasm",
-        });
-
-        if (RDKitModule) {
-          console.log("RDKit.js initialized");
-          setRDKit(RDKitModule); 
-        }
-      } catch (e) {
-        console.error("RDKit initialization failed", e);
-      }
-    };
-
-    loadRDKit();
+    initRDKitModule({ locateFile: () => '/RDKit_minimal.wasm' })
+      .then((RDKitModule: any) => setRDKit(RDKitModule))
+      .catch(console.error);
   }, []);
 
-  const renderMoleculeSVG = (smiles: string) => {
+  const renderSVG = (smiles: string) => {
     if (!RDKit) return <div>Loading...</div>;
-
     try {
       const mol = RDKit.get_mol(smiles);
       const svg = mol.get_svg();
       mol.delete();
-      return (
-        <div
-          style={{ width: 'auto'}}
-          dangerouslySetInnerHTML={{ __html: svg }}
-        />
-      );
-    } catch (e) {
-      return <div>Error rendering</div>;
+      return <div dangerouslySetInnerHTML={{ __html: svg }} />;
+    } catch {
+      return <div>Error</div>;
     }
   };
 
-  return (
-    <div className="overflow-auto max-w-full">
-      <table className="table-auto border-separate border-spacing-x-5 ...">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border px-[20px] py-1">Index</th>
-            <th className="border px-[20px] py-1">Molecule</th>
-            <th className="border px-[20px] py-1">Name</th>
-            <th className="border px-[20px] py-1">SMARTS Name</th>
-            <th className="border px-[20px] py-1">Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {matchCounts.map((mol, idx) => (
-          <tr
-            key={idx}
-            className={
-              mol.failed ? "bg-red-50 text-red-700 font-medium" : "bg-green-50"
-            }
-          >
-            <td className="border px-[20px] py-1 text-center">{idx + 1}</td>
-            <td className="border px-[20px] py-1">{renderMoleculeSVG(mol.SMILES)}</td>
-            <td className="border px-[20px] py-1">{mol.name}</td>
-            <td className="border px-[20px] py-1 text-center">{mol.Smart}</td>
-            <td className="border px-[20px] py-1 text-center">{mol.failed ? "Fail" : "Pass"}</td>
-          </tr>
-          ))}
-          {matchCounts.length === 0 && (
-            <tr>
-              <td
-                colSpan={5}
-                className="border px-2 py-3 text-center text-gray-500"
-              >
-                No results to display
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+  // Filtered list based on passes/fails
+  const filtered = matchCounts.filter(m => {
+    if (m.matched && !includePasses) return false;
+    if (!m.matched && !includeFails) return false;
+    return true;
+  });
 
-      <div className="mt-2 text-sm">
-        Total molecules: {matchCounts.length} | Displaying {totalMatched}
+  // Selected detailed molecule for analyze1mol
+  const detail = mode === 'analyze1mol' && matchCounts[currentIndex];
+
+  return (
+    <div className="container-fluid">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h3 className="text-white bg-gradient-to-r from-blue-600 to-teal-400 p-2 rounded">SMARTS Filters Results</h3>
       </div>
+
+      {mode === 'analyze1mol' && detail ? (
+        <div className="row">
+          <div className="col-md-4">
+            <div className="card mb-3">
+              <div className="card-header bg-gradient-to-r from-purple-500 to-pink-500 text-white">Molecule Detail</div>
+              <div className="card-body text-center">
+                {depict && renderSVG(detail.SMILES)}
+                <h5 className="mt-2">{detail.name}</h5>
+                <p>Result: <strong className={detail.matched ? 'text-danger' : 'text-success'}>{detail.matched ? 'Fail' : 'Pass'}</strong></p>
+                <p>Total matches: {detail.matches?.filter(Boolean).length}</p>
+                <div className="d-flex justify-content-between">
+                  <button className="btn btn-sm btn-outline-primary" disabled={currentIndex===0} onClick={() => setCurrentIndex(currentIndex-1)}>Prev</button>
+                  <button className="btn btn-sm btn-outline-primary" disabled={currentIndex===matchCounts.length-1} onClick={() => setCurrentIndex(currentIndex+1)}>Next</button>
+                </div>
+              </div>
+            </div>
+            {showMatches && detail.matches && (
+              <table className="table table-sm table-bordered">
+                <thead className="table-secondary">
+                  <tr>
+                    <th>#</th><th>Match</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detail.matches.map((m,i) => (
+                    <tr key={i} className={m ? 'table-success':'table-danger'}>
+                      <td>{i+1}</td><td>{m?'✓':'✗'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <div className="col-md-8">
+            <h5>Other Molecules</h5>
+            <table className="table table-striped table-hover">
+              <thead>
+                <tr><th>#</th><th>Name</th><th>Result</th></tr>
+              </thead>
+              <tbody>
+                {filtered.map((m,i)=>(
+                  <tr key={i} onClick={()=>setCurrentIndex(matchCounts.indexOf(m))} style={{cursor:'pointer'}}>
+                    <td>{i+1}</td>
+                    <td>{m.name}</td>
+                    <td className={m.matched?'text-danger':'text-success'}>{m.matched?'Fail':'Pass'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <table className="table table-bordered table-hover">
+            <thead className="table-light">
+              <tr><th>#</th><th>Name</th><th>Result</th></tr>
+            </thead>
+            <tbody>
+              {filtered.map((m,i)=>(
+                <tr key={i}>
+                  <td>{i+1}</td>
+                  <td>{m.name}</td>
+                  <td className={m.matched?'text-danger':'text-success'}>{m.matched?'Fail':'Pass'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="mt-2 text-muted">Total molecules: {filtered.length} / {totalMatched}</div>
     </div>
   );
 };

@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { MatchResult } from "../App";
-import initRDKitModule from "@rdkit/rdkit"; // ✅ FIXED: proper import
+import initRDKitModule from "@rdkit/rdkit";
 
 type Props = {
   matchCounts: MatchResult[];
-  smarts: string[];
-  mode: "filter" | "analyze";
+  mode: string;
   totalMatched: number;
 };
 
 const SmartsFilterResult: React.FC<Props> = ({
   matchCounts,
-  smarts,
   mode,
   totalMatched,
 }) => {
@@ -21,12 +19,12 @@ const SmartsFilterResult: React.FC<Props> = ({
     const loadRDKit = async () => {
       try {
         const RDKitModule = await initRDKitModule({
-          locateFile: () => "/RDKit_minimal.wasm", // ✅ Match your public folder
+          locateFile: () => "/RDKit_minimal.wasm",
         });
 
         if (RDKitModule) {
           console.log("RDKit.js initialized");
-          setRDKit(RDKitModule); // ✅ FIXED: state set correctly
+          setRDKit(RDKitModule); 
         }
       } catch (e) {
         console.error("RDKit initialization failed", e);
@@ -45,7 +43,7 @@ const SmartsFilterResult: React.FC<Props> = ({
       mol.delete();
       return (
         <div
-          style={{ width: 120, height: 80 }}
+          style={{ width: 'auto'}}
           dangerouslySetInnerHTML={{ __html: svg }}
         />
       );
@@ -56,58 +54,30 @@ const SmartsFilterResult: React.FC<Props> = ({
 
   return (
     <div className="overflow-auto max-w-full">
-      <table className="table-auto border-collapse border border-gray-300 w-full text-sm">
+      <table className="table-auto border-separate border-spacing-x-5 ...">
         <thead>
           <tr className="bg-gray-100">
-            <th className="border px-2 py-1">#</th>
-            <th className="border px-2 py-1">Molecule</th>
-            <th className="border px-2 py-1">Name</th>
-            <th className="border px-2 py-1">Result</th>
-            <th className="border px-2 py-1">Match Table</th>
+            <th className="border px-[20px] py-1">Index</th>
+            <th className="border px-[20px] py-1">Molecule</th>
+            <th className="border px-[20px] py-1">Name</th>
+            <th className="border px-[20px] py-1">SMARTS Name</th>
+            <th className="border px-[20px] py-1">Result</th>
           </tr>
         </thead>
         <tbody>
           {matchCounts.map((mol, idx) => (
-            <tr
-              key={idx}
-              className={
-                mol.matched ? "bg-green-50" : "bg-red-50 text-red-700 font-medium"
-              }
-            >
-              <td className="border px-2 py-1 text-center">{idx + 1}</td>
-              <td className="border px-2 py-1">{renderMoleculeSVG(mol.SMILES)}</td>
-              <td className="border px-2 py-1">{mol.name}</td>
-              <td className="border px-2 py-1 text-center">
-                {mol.matched ? "Pass" : "Fail"}
-              </td>
-              <td className="border px-2 py-1">
-                <table className="w-full text-xs border-collapse border">
-                  <thead>
-                    <tr>
-                      {smarts.map((_, i) => (
-                        <th key={i} className="border px-1 py-0.5 text-center">
-                          S{i + 1}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      {mol.matches?.map((flag, i) => (
-                        <td
-                          key={i}
-                          className={`border px-1 py-0.5 text-center ${
-                            flag ? "text-green-600" : "text-red-600"
-                          }`}
-                        >
-                          {flag ? "✓" : "✗"}
-                        </td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
+          <tr
+            key={idx}
+            className={
+              mol.failed ? "bg-red-50 text-red-700 font-medium" : "bg-green-50"
+            }
+          >
+            <td className="border px-[20px] py-1 text-center">{idx + 1}</td>
+            <td className="border px-[20px] py-1">{renderMoleculeSVG(mol.SMILES)}</td>
+            <td className="border px-[20px] py-1">{mol.name}</td>
+            <td className="border px-[20px] py-1 text-center">{mol.Smart}</td>
+            <td className="border px-[20px] py-1 text-center">{mol.failed ? "Fail" : "Pass"}</td>
+          </tr>
           ))}
           {matchCounts.length === 0 && (
             <tr>

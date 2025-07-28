@@ -1,126 +1,116 @@
-import React, { useEffect, useState } from 'react';
-import initRDKitModule from '@rdkit/rdkit';
-import { MatchResult } from '../App';
+import React from "react";
+import { MatchResult } from "../App";
+import "bootstrap/dist/css/bootstrap.min.css";
+import MolImage from "./MolImage";
 
-type Props = {
+interface SmartsFilterResultProps {
   matchCounts: MatchResult[];
-  mode: string;
+  mode: "filter" | "analyze1mol";
   totalMatched: number;
-};
+  batch?: boolean;
+  view?: boolean;
+  depict?: boolean;
+}
 
-const SmartsFilterResult: React.FC<Props> = ({ matchCounts, mode, totalMatched }) => {
-  const [RDKit, setRDKit] = useState<any>(null);
-  const [showMatches, setShowMatches] = useState(true);
-  const [includePasses, setIncludePasses] = useState(true);
-  const [includeFails, setIncludeFails] = useState(true);
-  const [depict, setDepict] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
+const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
+  matchCounts,
+  mode,
+  totalMatched,
+  batch = false,
+  view = false,
+  depict = false,
+}) => {
+  const downloadCSV = () => {
+    const headers = ["Index", "Structure", "Molecule Name", "SMART Filter", "Result"];
+    const rows = matchCounts.map((result, idx) => [
+      idx + 1,
+      result.SMILES,
+      result.name,
+      result.Smart || "",
+      result.matched ? "Matched" : "Not Matched",
+    ]);
 
-  useEffect(() => {
-    initRDKitModule({ locateFile: () => '/RDKit_minimal.wasm' })
-      .then((RDKitModule: any) => setRDKit(RDKitModule))
-      .catch(console.error);
-  }, []);
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((r) => r.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
 
-  const renderSVG = (smiles: string) => {
-    if (!RDKit) return <div>Loading...</div>;
-    try {
-      const mol = RDKit.get_mol(smiles);
-      const svg = mol.get_svg();
-      mol.delete();
-      return <div dangerouslySetInnerHTML={{ __html: svg }} />;
-    } catch {
-      return <div>Error</div>;
-    }
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "smarts_filter_results.csv");
+    link.click();
   };
-
-  // Filtered list based on passes/fails
-  const filtered = matchCounts.filter(m => {
-    if (m.matched && !includePasses) return false;
-    if (!m.matched && !includeFails) return false;
-    return true;
-  });
-
-  // Selected detailed molecule for analyze1mol
-  const detail = mode === 'analyze1mol' && matchCounts[currentIndex];
-
+  const sanitizeSmiles = (smiles: string) => smiles?.split(" ")[0].trim();
   return (
-    <div className="container-fluid">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3 className="text-white bg-gradient-to-r from-blue-600 to-teal-400 p-2 rounded">SMARTS Filters Results</h3>
+    <div className="card shadow-sm mt-3">
+      <div className="card-header d-flex justify-content-between align-items-center bg-gradient bg-primary text-white">
+        <span>Results ({totalMatched} molecules processed)</span>
+        {mode === "filter" && (
+          <button onClick={downloadCSV} className="btn btn-sm btn-outline-light">
+            Download CSV
+          </button>
+        )}
       </div>
 
-      {mode === 'analyze1mol' && detail ? (
-        <div className="row">
-          <div className="col-md-4">
-            <div className="card mb-3">
-              <div className="card-header bg-gradient-to-r from-purple-500 to-pink-500 text-white">Molecule Detail</div>
-              <div className="card-body text-center">
-                {depict && renderSVG(detail.SMILES)}
-                <h5 className="mt-2">{detail.name}</h5>
-                <p>Result: <strong className={detail.matched ? 'text-danger' : 'text-success'}>{detail.matched ? 'Fail' : 'Pass'}</strong></p>
-                <p>Total matches: {detail.matches?.filter(Boolean).length}</p>
-                <div className="d-flex justify-content-between">
-                  <button className="btn btn-sm btn-outline-primary" disabled={currentIndex===0} onClick={() => setCurrentIndex(currentIndex-1)}>Prev</button>
-                  <button className="btn btn-sm btn-outline-primary" disabled={currentIndex===matchCounts.length-1} onClick={() => setCurrentIndex(currentIndex+1)}>Next</button>
-                </div>
-              </div>
-            </div>
-            {showMatches && detail.matches && (
-              <table className="table table-sm table-bordered">
-                <thead className="table-secondary">
-                  <tr>
-                    <th>#</th><th>Match</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detail.matches.map((m,i) => (
-                    <tr key={i} className={m ? 'table-success':'table-danger'}>
-                      <td>{i+1}</td><td>{m?'✓':'✗'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-          <div className="col-md-8">
-            <h5>Other Molecules</h5>
-            <table className="table table-striped table-hover">
-              <thead>
-                <tr><th>#</th><th>Name</th><th>Result</th></tr>
+      <div className="card-body p-0">
+        {mode === "filter" ? (
+          <div className="table-responsive">
+            <table className="table table-striped table-bordered mb-0">
+              <thead className="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Structure</th>
+                  <th>Molecule Name</th>
+                  <th>SMART Filter</th>
+                  <th>Result</th>
+                </tr>
               </thead>
               <tbody>
-                {filtered.map((m,i)=>(
-                  <tr key={i} onClick={()=>setCurrentIndex(matchCounts.indexOf(m))} style={{cursor:'pointer'}}>
-                    <td>{i+1}</td>
-                    <td>{m.name}</td>
-                    <td className={m.matched?'text-danger':'text-success'}>{m.matched?'Fail':'Pass'}</td>
+                {matchCounts.map((res, idx) => (
+                  <tr key={idx}>
+                    <td>{idx + 1}</td>
+                    <td>
+                      {view ? (
+                      <MolImage
+                        smiles={sanitizeSmiles(res.SMILES)}
+                        format="svg"  // or "png" — format independent of depict
+                        width={"100%"}
+                        height={"auto"}
+                        highlightAtoms={depict && res.highlightAtoms ? res.highlightAtoms : []}
+                      />
+
+                      ) : (
+                        sanitizeSmiles(res.SMILES)
+                      )}
+                    </td>
+                    <td>{res.name}</td>
+                    <td>{res.Smart || ""}</td>
+                    <td>
+                      <span className={`badge ${res.matched ? "bg-danger" : "bg-success"}`}>
+                        {res.matched ? "Fail" : "Pass"}
+                      </span>
+                    </td>
+
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-      ) : (
-        <div>
-          <table className="table table-bordered table-hover">
-            <thead className="table-light">
-              <tr><th>#</th><th>Name</th><th>Result</th></tr>
-            </thead>
-            <tbody>
-              {filtered.map((m,i)=>(
-                <tr key={i}>
-                  <td>{i+1}</td>
-                  <td>{m.name}</td>
-                  <td className={m.matched?'text-danger':'text-success'}>{m.matched?'Fail':'Pass'}</td>
-                </tr>
+        ) : (
+          <div className="p-3">
+            <h6>Total Processed: {totalMatched}</h6>
+            <ul>
+              {matchCounts.map((res, idx) => (
+                <li key={idx}>
+                  {res.name} ({res.SMILES}) - {res.matched ? "Matched" : "Not Matched"}
+                </li>
               ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <div className="mt-2 text-muted">Total molecules: {filtered.length} / {totalMatched}</div>
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

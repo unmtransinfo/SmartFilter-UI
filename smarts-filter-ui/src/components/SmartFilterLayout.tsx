@@ -10,6 +10,12 @@ type SmartFilterLayoutProps = {
   runmode: RunMode;
   setRunmode: React.Dispatch<React.SetStateAction<RunMode>>;
   onSubmit: (inputData: any) => void;
+  setBatch: React.Dispatch<React.SetStateAction<boolean>>;
+  setView: React.Dispatch<React.SetStateAction<boolean>>;
+  setDepict: React.Dispatch<React.SetStateAction<boolean>>;
+  setPainsChecked: React.Dispatch<React.SetStateAction<boolean>>;
+  view: boolean; // ✅ Add this
+  depict: boolean; // ✅ Add this
   children: React.ReactNode;
 };
 
@@ -19,13 +25,17 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
   runmode,
   setRunmode,
   onSubmit,
+  setBatch,
+  setView,
+  setDepict,
+  setPainsChecked,
+  view, // ✅ Destructure here
+  depict, // ✅ Destructure here
   children,
 }) => {
-  const presets = ["Pains", "Blake", "Glaxo", "Oprea", "Alarm NMR"];
-
   return (
     <div className="container-fluid p-3">
-      {/* Top Bar with switch */}
+      {/* Top Bar */}
       <div className="row align-items-center mb-4 border-bottom pb-2">
         <div className="col-md-3 text-start">
           <div className="form-check form-switch">
@@ -51,9 +61,8 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
         </div>
       </div>
 
-      {/* Input Data & Configuration */}
+      {/* Input and Config */}
       <div className="row g-4 mb-4">
-        {/* Input Data card */}
         <div className="col-md-8">
           <div className="card shadow-sm h-100">
             <div className="card-header bg-primary text-white">Input Data</div>
@@ -63,7 +72,6 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
           </div>
         </div>
 
-        {/* Configuration card */}
         <div className="col-md-4">
           <div className="card shadow-sm h-100">
             <div className="card-header bg-dark text-white">Configuration</div>
@@ -96,69 +104,137 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
                     <input
                       type="text"
                       className="form-control form-control-sm"
-                      placeholder="," />
+                      placeholder=","
+                    />
                   </div>
                   <div className="mb-2">
                     <label className="form-label">SMILES Col</label>
                     <input
                       type="number"
-                      className="form-control form-control-sm" />
+                      className="form-control form-control-sm"
+                    />
                   </div>
                   <div className="mb-2">
                     <label className="form-label">Name Col</label>
                     <input
                       type="number"
-                      className="form-control form-control-sm" />
+                      className="form-control form-control-sm"
+                    />
                   </div>
-                  {/* {mode === "expert" && (
-                    <>
-                    </>
-                  )} */}
                 </div>
+
                 <div className="col-1 border-start"></div>
+
                 <div className="col-5">
                   <h6>Output</h6>
                   <div className="form-check mb-1">
-                    <input type="checkbox" className="form-check-input" id="batchCheck" />
-                    <label className="form-check-label" htmlFor="batchCheck">Batch</label>
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id="batchCheck"
+                      onChange={(e) => setBatch(e.target.checked)}
+                    />
+                    <label className="form-check-label" htmlFor="batchCheck">
+                      Batch
+                    </label>
                   </div>
                   <div className="form-check mb-1">
-                    <input type="checkbox" className="form-check-input" id="viewCheck" />
-                    <label className="form-check-label" htmlFor="viewCheck">View</label>
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id="viewCheck"
+                      checked={view}
+                      onChange={(e) => setView(e.target.checked)}
+                    />
+                    <label className="form-check-label" htmlFor="viewCheck">
+                      View
+                    </label>
                   </div>
                   <div className="form-check mb-1">
-                    <input type="checkbox" className="form-check-input" id="depictCheck" />
-                    <label className="form-check-label" htmlFor="depictCheck">Depict</label>
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id="depictCheck"
+                      checked={depict}
+                      onChange={(e) => setDepict(e.target.checked)}
+                      disabled={!view} // ✅ Only enabled if view is on
+                    />
+                    <label className="form-check-label" htmlFor="depictCheck">
+                      Depict (Highlight Matches)
+                    </label>
                   </div>
+
                   {mode === "expert" && (
                     <>
                       <div className="form-check mb-1">
-                        <input type="checkbox" className="form-check-input" id="showMatch" />
-                        <label className="form-check-label" htmlFor="showMatch">Show Matches</label>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          id="showMatch"
+                        />
+                        <label className="form-check-label" htmlFor="showMatch">
+                          Show Matches
+                        </label>
                       </div>
                       <div className="form-check mb-1">
-                        <input type="checkbox" className="form-check-input" id="passCheck" />
-                        <label className="form-check-label" htmlFor="passCheck">Include Passes</label>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          id="passCheck"
+                        />
+                        <label className="form-check-label" htmlFor="passCheck">
+                          Include Passes
+                        </label>
                       </div>
                       <div className="form-check mb-1">
-                        <input type="checkbox" className="form-check-input" id="failCheck" />
-                        <label className="form-check-label" htmlFor="failCheck">Include Fails</label>
-                      </div>
-                                            <div className="form-check mb-1">
-                        <input type="checkbox" className="form-check-input" id="headerCheck" />
-                        <label className="form-check-label" htmlFor="headerCheck">Has Header</label>
-                      </div>
-                      <div className="form-check mb-1">
-                        <input type="checkbox" className="form-check-input" id="excludeMol" />
-                        <label className="form-check-label" htmlFor="excludeMol">Exclude MolProps</label>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          id="failCheck"
+                        />
+                        <label className="form-check-label" htmlFor="failCheck">
+                          Include Fails
+                        </label>
                       </div>
                       <div className="form-check mb-1">
-                        <input type="checkbox" className="form-check-input" id="strictCheck" />
-                        <label className="form-check-label" htmlFor="strictCheck">Strict Mode</label>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          id="headerCheck"
+                        />
+                        <label className="form-check-label" htmlFor="headerCheck">
+                          Has Header
+                        </label>
                       </div>
                       <div className="form-check mb-1">
-                        <input type="checkbox" className="form-check-input" id="uniqueAtoms" />
-                        <label className="form-check-label" htmlFor="uniqueAtoms">Unique Atoms</label>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          id="excludeMol"
+                        />
+                        <label className="form-check-label" htmlFor="excludeMol">
+                          Exclude MolProps
+                        </label>
+                      </div>
+                      <div className="form-check mb-1">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          id="strictCheck"
+                        />
+                        <label className="form-check-label" htmlFor="strictCheck">
+                          Strict Mode
+                        </label>
+                      </div>
+                      <div className="form-check mb-1">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          id="uniqueAtoms"
+                        />
+                        <label className="form-check-label" htmlFor="uniqueAtoms">
+                          Unique Atoms
+                        </label>
                       </div>
                     </>
                   )}
@@ -169,7 +245,7 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
         </div>
       </div>
 
-      {/* Children (Results) */}
+      {/* Children (results) */}
       {children}
     </div>
   );

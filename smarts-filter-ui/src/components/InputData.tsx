@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 
-const InputData = ({ onSubmit, showSmarts = true }: { onSubmit: any; showSmarts?: boolean }) => {
+const InputData = ({ onSubmit, showSmarts = true, onFilterChange }: { onSubmit: any; showSmarts?: boolean; onFilterChange?: (filters: string[]) => void; }) => {
   const [smilesText, setSmilesText] = useState("");
   const [smartsText, setSmartsText] = useState("");
   const [presetFilters, setPresetFilters] = useState<string[]>([]);
@@ -27,11 +27,18 @@ const InputData = ({ onSubmit, showSmarts = true }: { onSubmit: any; showSmarts?
   };
 
   const handlePresetChange = (preset: string) => {
-    setPresetFilters((prev) =>
-      prev.includes(preset)
-        ? prev.filter((p) => p !== preset)
-        : [...prev, preset]
-    );
+    setPresetFilters((prev) => {
+      let newFilters;
+      if (prev.includes(preset)) {
+        newFilters = prev.filter((p) => p !== preset);
+      } else {
+        newFilters = [...prev, preset];
+      }
+      if (onFilterChange) {
+        onFilterChange(newFilters); // notify parent here
+      }
+      return newFilters;
+    });
   };
 
   return (
@@ -52,7 +59,7 @@ const InputData = ({ onSubmit, showSmarts = true }: { onSubmit: any; showSmarts?
           filters: presetFilters,
           delimiter: " ",
           smileCol: 0,
-          nameCol: null,
+          nameCol: 1,
         });
       }}
       style={{ padding: 20 }}
@@ -127,12 +134,19 @@ const InputData = ({ onSubmit, showSmarts = true }: { onSubmit: any; showSmarts?
           <div className="d-flex flex-wrap gap-3 mb-3">
             {presets.map((p) => (
               <div className="form-check form-check-inline" key={p}>
-                <input className="form-check-input" type="checkbox" id={`preset-${p}`} />
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id={`preset-${p}`}
+                  checked={presetFilters.includes(p)}
+                  onChange={() => handlePresetChange(p)}
+                />
                 <label className="form-check-label" htmlFor={`preset-${p}`}>
                   {p}
                 </label>
               </div>
             ))}
+
           </div>
 
           {showSmarts && (

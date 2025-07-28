@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import InputData from "./components/InputData";
 import SmartFilterLayout from "./components/SmartFilterLayout";
 import SmartsFilterResult from "./components/SmartsFilterResult";
-import initRDKitModule from "@rdkit/rdkit"; 
+import initRDKitModule from "@rdkit/rdkit";
 
 export type MatchResult = {
   name: string;
@@ -12,18 +12,19 @@ export type MatchResult = {
   matched?: boolean;
   matches?: boolean[];
   failed?: boolean;
+  highlightAtoms?: number[];
 };
-
-// type RunMode = "filter" | "analyze1mol";
-// type AppMode = "normal" | "expert";
 
 function App() {
   const [results, setResults] = useState<MatchResult[]>([]);
-  const [smarts, setSmarts] = useState<{ smarts: string; name: string }[]>([]);
   const [mode, setMode] = useState<AppMode>("normal");
   const [runmode, setRunmode] = useState<RunMode>("filter");
   const [tMatch, setMatch] = useState<number>(0);
   const [RDKit, setRDKit] = useState<any>(null);
+  const [batch, setBatch] = useState(false);
+  const [view, setView] = useState(false);
+  const [depict, setDepict] = useState(false);
+  const [painsChecked, setPainsChecked] = useState(false);
 
   useEffect(() => {
     const loadRDKit = async () => {
@@ -50,18 +51,11 @@ function App() {
 
   const handleSubmit = async (inputData: any) => {
     let smilesRaw = "";
-    let smartsRaw = "";
 
     if (inputData.smiles.type === "text") {
       smilesRaw = inputData.smiles.content;
     } else {
       smilesRaw = await readFileContent(inputData.smiles.content);
-    }
-
-    if (inputData.smarts.type === "text") {
-      smartsRaw = inputData.smarts.content;
-    } else {
-      smartsRaw = await readFileContent(inputData.smarts.content);
     }
 
     const lines = smilesRaw.split(/\r?\n/).filter(Boolean);
@@ -74,217 +68,181 @@ function App() {
       smilesArray.push(smile);
       namesArray.push(inputData.nameCol !== null && parts[inputData.nameCol] ? parts[inputData.nameCol] : smile);
     }
-    
-    const smartsArray = smartsRaw
-        .split(/\n+/)
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .map((line) => {
-          const parts = line.split(/\s+/); 
-          return {
-            smarts: parts[0],
-            name: parts[1] || `S${Math.random().toString(36).slice(2, 6)}`, 
-          };
-        });
-    setSmarts(smartsArray);
+
     setMatch(smilesArray.length);
+    const painsIsChecked = inputData.filters.includes("Pains");
+    setPainsChecked(painsIsChecked);
 
-    const query = new URLSearchParams();
-    query.append("SMILES", smilesArray.join(","));
-    query.append("Smile_Names", namesArray.join(","));
+    const inputCanonMap = new Map<string, string>();
+    const inputNameMap = new Map<string, string>();
+    smilesArray.forEach((smi, idx) => {
+      try {
+        const mol = RDKit.get_mol(smi);
+        const canon = mol.get_smiles();
+        mol.delete();
+        inputCanonMap.set(canon, smi);
+        inputNameMap.set(canon, namesArray[idx]);
+      } catch {
+        console.warn("Invalid SMILES for PAINS:", smi);
+      }
+    });
 
-    if (mode === "normal") {
-      if (runmode === "filter") {
-        const inputCanonMap = new Map<string, string>();
-        const inputNameMap = new Map<string, string>();
-        smilesArray.forEach((smi, idx) => {
+    if (painsIsChecked) {
+      const query = new URLSearchParams();
+      query.append("SMILES", smilesArray.join(","));
+      query.append("Smile_Names", namesArray.join(","));
+
+      const res = await fetch(`http://localhost:8000/api/v1/smarts_filter/get_filterpains?${query}`);
+      const json = await res.json();
+      const resultList: MatchResult[] = [];
+        json.forEach((entry: any) => {
           try {
-            const mol = RDKit.get_mol(smi);
+            const mol = RDKit.get_mol(entry.smiles);
             const canon = mol.get_smiles();
             mol.delete();
-            inputCanonMap.set(canon, smi);
-            inputNameMap.set(canon, namesArray[idx]);
-          } catch {
-            console.warn("Invalid SMILES:", smi);
+            if(entry.failed){
+              const highlightIndices = entry.highlight_atoms?.flat() ?? [];
+            resultList.push({
+              name: entry.name || inputNameMap.get(canon) || canon,
+              SMILES: inputCanonMap.get(canon) || canon,
+              Smart: "PAINS",
+              matched: true,
+              failed: true,
+              highlightAtoms: highlightIndices,
+            });
+          }
+          else{
+            resultList.push({
+              name: entry.name || inputNameMap.get(canon) || canon,
+              SMILES: inputCanonMap.get(canon) || canon,
+              Smart: "PAINS",
+              matched: false,
+              failed: false,
+              highlightAtoms: [],
+            });
+          }
+            }
+             catch {
+            console.warn("Failed to process PAINS failed entry:", entry);
           }
         });
+        // json.forEach((entry: any) => {
+        //   try {
+        //     const mol = RDKit.get_mol(entry.smiles);
+        //     const canon = mol.get_smiles();
+        //     mol.delete();
 
-        const allFailures: MatchResult[] = [];
+        //     resultList.push({
+        //       name: entry.name || inputNameMap.get(canon) || canon,
+        //       SMILES: inputCanonMap.get(canon) || canon,
+        //       Smart: "PAINS",
+        //       matched: false,
+        //       failed: false,
+        //       highlightAtoms: [],
+        //     });
+        //   } catch {
+        //     console.warn("Failed to process PAINS passed entry:", entry);
+        //   }
+        // });
 
-        for (let i = 0; i < smartsArray.length; i++) {
-          const query = new URLSearchParams();
-          query.append("SMILES", smilesArray.join(","));
-          query.append("Smile_Names", namesArray.join(","));
-          query.append("smarts", smartsArray[i].smarts);
+      setResults(resultList);
+      return;
+    }
 
-          const res = await fetch(
-            `http://localhost:8000/api/v1/smarts_filter/get_matchfilter?${query}`
-          );
-          const json = await res.json();
-          const failedCanon = json.failed
-            .map((m: any) => {
-              try {
-                const mol = RDKit.get_mol(m.smiles);
-                const canon = mol.get_smiles();
-                mol.delete();
-                return canon;
-              } catch {
-                return null;
-              }
-            })
-            .filter(Boolean);
 
-          const passedCanon = json.passed
-            .map((m: any) => {
-              try {
-                const mol = RDKit.get_mol(m.smiles);
-                const canon = mol.get_smiles();
-                mol.delete();
-                return canon;
-              } catch {
-                return null;
-              }
-            })
-            .filter(Boolean);
+    // Default SMARTS logic (non-PAINS)
+    let smartsRaw = "";
+    if (inputData.smarts && inputData.smarts.type === "text") {
+      smartsRaw = inputData.smarts.content;
+    } else if (inputData.smarts) {
+      smartsRaw = await readFileContent(inputData.smarts.content);
+    }
 
-          failedCanon.forEach((canonSmiles: string) => {
-            allFailures.push({
-              name: inputNameMap.get(canonSmiles) || canonSmiles,
-              SMILES: inputCanonMap.get(canonSmiles) || canonSmiles,
+    const smartsArray = smartsRaw
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const parts = line.split(/\s+/);
+        return {
+          smarts: parts[0],
+          name: parts[1] || `S${Math.random().toString(36).slice(2, 6)}`,
+        };
+      });
+
+    if (mode === "normal" && runmode === "filter") {
+      const allResults: MatchResult[] = [];
+
+      for (let i = 0; i < smartsArray.length; i++) {
+        const query = new URLSearchParams();
+        query.append("SMILES", smilesArray.join(","));
+        query.append("Smile_Names", namesArray.join(","));
+        query.append("smarts", smartsArray[i].smarts);
+
+        const res = await fetch(`http://localhost:8000/api/v1/smarts_filter/get_matchfilter?${query}`);
+        const json = await res.json();
+
+        json.failed?.forEach((m: any) => {
+          try {
+            const mol = RDKit.get_mol(m.smiles);
+            const canon = mol.get_smiles();
+            mol.delete();
+            allResults.push({
+              name: inputNameMap.get(canon) || canon,
+              SMILES: inputCanonMap.get(canon) || canon,
               Smart: smartsArray[i].name,
               matched: true,
               failed: true,
             });
-          });
+          } catch {}
+        });
 
-          passedCanon.forEach((canonSmiles: string) => {
-            allFailures.push({
-              name: inputNameMap.get(canonSmiles) || canonSmiles,
-              SMILES: inputCanonMap.get(canonSmiles) || canonSmiles,
+        json.passed?.forEach((m: any) => {
+          try {
+            const mol = RDKit.get_mol(m.smiles);
+            const canon = mol.get_smiles();
+            mol.delete();
+            allResults.push({
+              name: inputNameMap.get(canon) || canon,
+              SMILES: inputCanonMap.get(canon) || canon,
               Smart: smartsArray[i].name,
               matched: false,
               failed: false,
             });
-          });
-
-        }
-        
-        setResults(allFailures);
+          } catch {}
+        });
       }
-    else if (runmode === "analyze1mol") {
-      const inputCanonMap = new Map<string, string>();
-      const inputNameMap = new Map<string, string>();
-      smilesArray.forEach((smi, idx) => {
-        try {
-          const mol = RDKit.get_mol(smi);
-          const canon = mol.get_smiles();
-          mol.delete();
-          inputCanonMap.set(canon, smi);
-          inputNameMap.set(canon, namesArray[idx]);
-        } catch {
-          console.warn("Invalid SMILES:", smi);
-        }
-      });
-
-      const allResults: MatchResult[] = [];
-
-      smartsArray.forEach(s => query.append("smarts", s.smarts));
-      smartsArray.forEach(s => query.append("Smart_Names", s.name));
-
-      const res = await fetch(
-        `http://localhost:8000/api/v1/smarts_filter/get_multi_matchfilter?${query}`
-      );
-      const json = await res.json();
-
-      json.passed.forEach((mol: any) => {
-        try {
-          const molObj = RDKit.get_mol(mol.smiles);
-          const canon = molObj.get_smiles();
-          molObj.delete();
-
-          allResults.push({
-            name: mol.name || inputNameMap.get(canon) || canon,
-            SMILES: mol.smiles || inputCanonMap.get(canon) || canon,
-            matched: false,
-            failed: false,
-          });
-        } catch {
-          // silently skip bad mols
-        }
-      });
-
-      json.failed.forEach((mol: any) => {
-        try {
-          const molObj = RDKit.get_mol(mol.smiles);
-          const canon = molObj.get_smiles();
-          molObj.delete();
-
-          allResults.push({
-            name: mol.name || inputNameMap.get(canon) || canon,
-            SMILES: mol.smiles || inputCanonMap.get(canon) || canon,
-            matched: true, 
-            failed: true,
-          });
-        } catch {
-          
-        }
-      });
 
       setResults(allResults);
     }
-
-    }
   };
 
-  // return (
-  //   <div className="p-4 space-y-4">
-  //     <div className="flex gap-4 items-center">
-  //       <label className="font-semibold">Mode:</label>
-  //       <select
-  //         value={mode}
-  //         onChange={(e) => setMode(e.target.value as AppMode)}
-  //         className="border p-1"
-  //       >
-  //         <option value="normal">Normal</option>
-  //         <option value="expert">Expert</option>
-  //       </select>
-
-  //       <label className="font-semibold">Run Mode:</label>
-  //       <select
-  //         value={runmode}
-  //         onChange={(e) => setRunmode(e.target.value as RunMode)}
-  //         className="border p-1"
-  //       >
-  //         <option value="filter">Filter</option>
-  //         <option value="analyze1mol">Analyze One Molecule</option>
-  //       </select>
-  //     </div>
-
-  //     <InputData onSubmit={handleSubmit} />
-
-  //     <SmartsFilterResult
-  //       matchCounts={results}
-  //       mode={runmode}
-  //       totalMatched={tMatch}
-  //     />
-  //   </div>
-  // );
-    return (
-      <SmartFilterLayout
-        mode={mode}
-        setMode={setMode}
-        runmode={runmode}
-        setRunmode={setRunmode}
-        onSubmit={handleSubmit}
-      >
-        <SmartsFilterResult
-          matchCounts={results}
-          mode={runmode}
-          totalMatched={tMatch}
-        />
-      </SmartFilterLayout>
+  return (
+    <SmartFilterLayout
+      mode={mode}
+      setMode={setMode}
+      runmode={runmode}
+      setRunmode={setRunmode}
+      onSubmit={handleSubmit}
+      setBatch={setBatch}
+      setView={setView}
+      setDepict={setDepict}
+      setPainsChecked={setPainsChecked}
+      view={view}
+      depict={depict}
+    >
+      <SmartsFilterResult
+        matchCounts={results}
+        mode={runmode}
+        totalMatched={tMatch}
+        batch={batch}
+        view={view}
+        depict={depict}
+      />
+    </SmartFilterLayout>
   );
 }
+
 export type RunMode = "filter" | "analyze1mol";
 export type AppMode = "normal" | "expert";
 

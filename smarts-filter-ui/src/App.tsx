@@ -129,8 +129,6 @@ function App() {
         });
       }
 
-      // === Blake Filter (using get_matchfilter + ursu_pains.sma) ===
-// === Blake Filter (using get_multi_matchfilter + ursu_pains.sma) ===
       if (blakeIsChecked) {
         const smartsText = await fetch("/data/ursu_pains.sma").then(res => res.text());
         const smartsPatterns = smartsText

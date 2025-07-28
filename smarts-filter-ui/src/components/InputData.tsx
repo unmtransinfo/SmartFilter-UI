@@ -1,6 +1,21 @@
 import React, { useRef, useState } from "react";
 
-const InputData = ({ onSubmit, showSmarts = true, onFilterChange }: { onSubmit: any; showSmarts?: boolean; onFilterChange?: (filters: string[]) => void; }) => {
+const InputData = ({
+  onSubmit,
+  showSmarts = true,
+  onFilterChange,
+  delimiter,
+  smileCol,
+  nameCol,
+}: {
+  onSubmit: any;
+  showSmarts?: boolean;
+  onFilterChange?: (filters: string[]) => void;
+  delimiter: string;
+  smileCol: number;
+  nameCol: number;
+}) => {
+
   const [smilesText, setSmilesText] = useState("");
   const [smartsText, setSmartsText] = useState("");
   const [presetFilters, setPresetFilters] = useState<string[]>([]);
@@ -57,9 +72,9 @@ const InputData = ({ onSubmit, showSmarts = true, onFilterChange }: { onSubmit: 
           smiles: { type: "text", content: smilesText },
           smarts: showSmarts ? { type: "text", content: smartsText } : null,
           filters: presetFilters,
-          delimiter: " ",
-          smileCol: 0,
-          nameCol: 1,
+          delimiter,
+          smileCol,
+          nameCol,
         });
       }}
       style={{ padding: 20 }}

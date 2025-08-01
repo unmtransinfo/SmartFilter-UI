@@ -1,0 +1,153 @@
+/* InputData.css */
+
+/* General form styling */
+form {
+  transition: background-color 0.4s ease, color 0.4s ease;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Light mode container */
+.container-fluid:not(.expert-mode) form {
+  background-color: #ffffff;
+  color: #212529;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Expert mode container */
+.container-fluid.expert-mode form {
+  background: linear-gradient(to bottom, #0d1117, #1e293b);
+  color: #e0e7ff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 8, 20, 0.9);
+}
+
+/* Layout: flex row gap */
+form > div {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Card styles inside form */
+form > div > div {
+  flex: 1;
+  border-radius: 12px;
+  padding: 20px;
+  transition: background-color 0.4s ease, box-shadow 0.4s ease, color 0.4s ease;
+}
+
+/* Light mode card */
+.container-fluid:not(.expert-mode) form > div > div {
+  background-color: #f7f9fa;
+  border: 1px solid #d6dbe0;
+  color: #212529;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Expert mode card */
+.container-fluid.expert-mode form > div > div {
+  background-color: #111827;
+  border: 1px solid #2c3e55;
+  color: #d0d9f9;
+  box-shadow: 0 4px 16px rgba(0, 8, 24, 0.8);
+}
+
+/* Labels */
+form label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+  color: inherit;
+}
+
+/* Upload and submit buttons */
+form button {
+  background-color: #28a745; /* Green for FILTER */
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #218838;
+}
+
+/* Upload buttons styling */
+.btn-upload {
+  background-color: #6c757d;
+  margin-bottom: 10px;
+}
+
+.btn-upload:hover {
+  background-color: #5a6268;
+}
+
+/* Checkboxes */
+.form-check-inline {
+  margin-right: 12px;
+}
+
+.form-check-input {
+  cursor: pointer;
+  accent-color: #28a745;
+  transition: accent-color 0.3s ease;
+}
+
+.container-fluid.expert-mode .form-check-input {
+  accent-color: #64d3af;
+}
+
+.form-check-label {
+  cursor: pointer;
+  user-select: none;
+  color: inherit;
+}
+
+/* Textareas */
+textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  border: 1px solid #ced4da;
+  background-color: #fff;
+  color: #212529;
+  transition: all 0.3s ease;
+}
+
+textarea:focus {
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 6px #80bdff;
+}
+
+/* Textarea in expert mode */
+.container-fluid.expert-mode textarea {
+  background-color: #1f2937;
+  border: 1px solid #3b82f6;
+  color: #e0e7ff;
+}
+
+.container-fluid.expert-mode textarea:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 8px #3b82f6aa;
+  color: #fff;
+}
+
+/* Divider line */
+.divider {
+  margin: 16px 0;
+  border-top: 1px solid #ccc;
+}
+
+.container-fluid.expert-mode .divider {
+  border-top: 1px solid #3b3b5e;
+}

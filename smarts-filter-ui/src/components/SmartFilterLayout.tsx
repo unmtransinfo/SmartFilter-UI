@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import InputData from "./InputData";
 import { AppMode, RunMode } from "../HomePage";
+import "../styles/SmartFilterLayout.css";
 
 type SmartFilterLayoutProps = {
   mode: AppMode;
@@ -30,11 +31,11 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
   const [nameCol, setNameCol] = useState<number>(1);
 
   return (
-    <div className="container-fluid p-3">
+  <div className={`container-fluid p-3 ${mode === "expert" ? "expert-mode" : ""}`}>
       {/* Top Bar */}
-      <div className="row align-items-center mb-4 border-bottom pb-2">
+      <div className="row align-items-center mb-4 border-bottom pb-2 top-bar">
         <div className="col-md-3 text-start">
-          <div className="form-check form-switch">
+          <div className="form-check form-switch mode-toggle">
             <input
               className="form-check-input"
               type="checkbox"
@@ -42,13 +43,14 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
               checked={mode === "expert"}
               onChange={(e) => setMode(e.target.checked ? "expert" : "normal")}
             />
-            <label className="form-check-label" htmlFor="modeSwitch">
+            <label className="form-check-label fw-semibold" htmlFor="modeSwitch">
               {mode === "expert" ? "Expert" : "Normal"}
             </label>
           </div>
         </div>
         <div className="col-md-6 text-center">
-          <span className="fs-4 fw-bold">SmartFilter</span>
+          <img src="/filter.png" alt="logo" width={60}/>
+          <span className="fs-4 fw-bold logo-title">SmartFilter</span>
         </div>
         <div className="col-md-3 text-end">
           <button className="btn btn-outline-secondary btn-sm mx-1">Help</button>
@@ -56,6 +58,7 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
           <button className="btn btn-outline-danger btn-sm mx-1">Reset</button>
         </div>
       </div>
+
 
       {/* Input and Config */}
       <div className="row g-4 mb-4">

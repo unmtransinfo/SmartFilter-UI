@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import "../styles/InputData.css"; // We'll create this CSS file below
 
 const InputData = ({
   onSubmit,
@@ -15,7 +16,6 @@ const InputData = ({
   smileCol: number;
   nameCol: number;
 }) => {
-
   const [smilesText, setSmilesText] = useState("");
   const [smartsText, setSmartsText] = useState("");
   const [presetFilters, setPresetFilters] = useState<string[]>([]);
@@ -50,7 +50,7 @@ const InputData = ({
         newFilters = [...prev, preset];
       }
       if (onFilterChange) {
-        onFilterChange(newFilters); // notify parent here
+        onFilterChange(newFilters);
       }
       return newFilters;
     });
@@ -77,35 +77,16 @@ const InputData = ({
           nameCol,
         });
       }}
-      style={{ padding: 20 }}
+      className="input-form"
     >
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div className="input-container">
         {/* SMILES Input Card */}
-        <div
-          style={{
-            flex: 1,
-            backgroundColor: "#fff",
-            borderRadius: 12,
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-            padding: 20,
-            border: "1px solid #e0e0e0",
-          }}
-        >
-          <label style={{ fontWeight: "600", display: "block", marginBottom: 8 }}>
-            SMILES Input:
-          </label>
+        <div className="input-card">
+          <label className="input-label">SMILES Input:</label>
           <button
             type="button"
             onClick={() => smilesFileInput.current?.click()}
-            style={{
-              marginBottom: 12,
-              padding: "8px 16px",
-              borderRadius: 6,
-              border: "none",
-              backgroundColor: "#007bff",
-              color: "#fff",
-              cursor: "pointer",
-            }}
+            className="btn-upload"
           >
             Upload
           </button>
@@ -121,32 +102,14 @@ const InputData = ({
             value={smilesText}
             onChange={(e) => setSmilesText(e.target.value)}
             placeholder="Paste SMILES here or upload a file above"
-            style={{
-              width: "100%",
-              padding: 12,
-              borderRadius: 8,
-              border: "1px solid #ced4da",
-              fontSize: 14,
-              resize: "vertical",
-            }}
+            className="input-textarea"
           />
         </div>
 
         {/* SMARTS Input and Filter Card */}
-        <div
-          style={{
-            flex: 1,
-            backgroundColor: "#fff",
-            borderRadius: 12,
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-            padding: 20,
-            border: "1px solid #e0e0e0",
-          }}
-        >
-          <label style={{ fontWeight: "600", display: "block", marginBottom: 8 }}>
-            Select SMART Filters:
-          </label>
-          <div className="d-flex flex-wrap gap-3 mb-3">
+        <div className="input-card">
+          <label className="input-label">Select SMART Filters:</label>
+          <div className="preset-filters">
             {presets.map((p) => (
               <div className="form-check form-check-inline" key={p}>
                 <input
@@ -161,27 +124,16 @@ const InputData = ({
                 </label>
               </div>
             ))}
-
           </div>
 
           {showSmarts && (
             <>
-              <hr />
-              <label style={{ fontWeight: "600", display: "block", marginBottom: 8 }}>
-                SMARTS Input:
-              </label>
+              <hr className="divider" />
+              <label className="input-label">SMARTS Input:</label>
               <button
                 type="button"
                 onClick={() => smartsFileInput.current?.click()}
-                style={{
-                  marginBottom: 12,
-                  padding: "8px 16px",
-                  borderRadius: 6,
-                  border: "none",
-                  backgroundColor: "#007bff",
-                  color: "#fff",
-                  cursor: "pointer",
-                }}
+                className="btn-upload"
               >
                 Upload
               </button>
@@ -197,14 +149,7 @@ const InputData = ({
                 value={smartsText}
                 onChange={(e) => setSmartsText(e.target.value)}
                 placeholder="Paste SMARTS here or upload a file above"
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 8,
-                  border: "1px solid #ced4da",
-                  fontSize: 14,
-                  resize: "vertical",
-                }}
+                className="input-textarea"
               />
             </>
           )}
@@ -212,7 +157,9 @@ const InputData = ({
       </div>
 
       <div style={{ marginTop: 20 }}>
-        <button type="submit">Submit Input</button>
+        <button type="submit" className="btn-submit">
+          FILTER
+        </button>
       </div>
     </form>
   );

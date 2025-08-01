@@ -1,0 +1,237 @@
+/* ===== Normal Mode (Light) ===== */
+.container-fluid.p-3 {
+  background: #f8f9fa; /* light gray */
+  color: #212529; /* dark text */
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+label{
+  font-size: 1.1rem;
+}
+button{
+  font-size: 1rem !important;
+}
+/* Cards with subtle shadow on light background */
+.card {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  color: #212529;
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
+}
+.fs-4{
+  font-size: 1.9rem !important;
+}
+/* Card headers */
+.card-header {
+  font-weight: 600;
+  background-color: #007bff; /* bootstrap primary blue */
+  color: #fff;
+  border-bottom: 1px solid #0069d9;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Form inputs: white background */
+input.form-control,
+select.form-select {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  color: #212529;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+input.form-control:focus,
+select.form-select:focus {
+  background-color: #fff;
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 5px #80bdff;
+}
+
+/* Labels */
+label.form-label,
+.form-check-label {
+  color: #212529;
+  font-weight: 500;
+}
+
+/* Buttons - outlines with subtle hover */
+.btn-outline-secondary,
+.btn-outline-info,
+.btn-outline-danger {
+  color: #495057;
+  border-color: #6c757d;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-info:hover,
+.btn-outline-danger:hover {
+  background-color: #6c757d;
+  color: #fff;
+  border-color: #6c757d;
+}
+
+/* Switch label color */
+.form-check.form-switch .form-check-label {
+  color: #212529;
+  user-select: none;
+}
+
+/* ===== Expert Mode (Dark, intense) ===== */
+.container-fluid.p-3.expert-mode {
+  background: linear-gradient(135deg, #0a1833, #152a57, #254271);
+  color: #e0e8f9;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* Cards darker with stronger shadows */
+.container-fluid.p-3.expert-mode .card {
+  background-color: rgba(10, 20, 40, 0.95);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(8, 16, 40, 0.9);
+  color: #d0d9f9;
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Expert mode card headers */
+.container-fluid.p-3.expert-mode .card-header {
+  background-color: #132a61 !important;
+  color: #d0d9f9 !important;
+  border-bottom: 1px solid #1a3a7a;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Inputs with dark backgrounds and bright focus */
+.container-fluid.p-3.expert-mode input.form-control,
+.container-fluid.p-3.expert-mode select.form-select {
+  background-color: rgba(30, 40, 60, 0.85);
+  border: 1px solid #245a73;
+  color: #d0d9e6;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.container-fluid.p-3.expert-mode input.form-control:focus,
+.container-fluid.p-3.expert-mode select.form-select:focus {
+  background-color: rgba(40, 60, 90, 0.95);
+  border-color: #4aa3bb;
+  color: #fff;
+  outline: none;
+  box-shadow: 0 0 8px #4aa3bbaa;
+}
+
+/* Labels with lighter colors */
+.container-fluid.p-3.expert-mode label.form-label,
+.container-fluid.p-3.expert-mode .form-check-label {
+  color: #b0c4f9;
+  font-weight: 500;
+}
+
+/* Buttons with bright accent and glow on hover */
+.container-fluid.p-3.expert-mode .btn-outline-secondary,
+.container-fluid.p-3.expert-mode .btn-outline-info,
+.container-fluid.p-3.expert-mode .btn-outline-danger {
+  border-color: #5a7fcf;
+  color: #b0c4f9;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.container-fluid.p-3.expert-mode .btn-outline-secondary:hover,
+.container-fluid.p-3.expert-mode .btn-outline-info:hover,
+.container-fluid.p-3.expert-mode .btn-outline-danger:hover {
+  background-color: #5a7fcf;
+  color: #fff;
+  box-shadow: 0 0 10px #5a7fcfaa;
+}
+
+/* Switch label color in expert */
+.container-fluid.p-3.expert-mode .form-check.form-switch .form-check-label {
+  color: #b0c4f9;
+  user-select: none;
+}
+
+/* Top Bar Base */
+.top-bar {
+  border-bottom: 1px solid #ccc;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  padding-bottom: 12px;
+}
+
+/* Light mode top bar */
+.container-fluid:not(.expert-mode) .top-bar {
+  background-color: #fdfdfd;
+  color: #212529;
+}
+
+/* Expert mode top bar */
+.container-fluid.expert-mode .top-bar {
+  background: linear-gradient(90deg, #111827, #1f2937);
+  border-bottom: 2px solid #3b82f6;
+  color: #dbeafe;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Mode toggle alignment and color */
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* Logo Text */
+.logo-title {
+  letter-spacing: 1px;
+  color: inherit;
+  vertical-align: middle;
+}
+
+/* Buttons */
+.top-bar button {
+  transition: all 0.3s ease;
+}
+
+/* Optional: button hover effect for expert mode */
+.container-fluid.expert-mode .top-bar .btn-outline-secondary {
+  border-color: #cbd5e1;
+  color: #cbd5e1;
+}
+.container-fluid.expert-mode .top-bar .btn-outline-secondary:hover {
+  background-color: #475569;
+}
+
+.container-fluid.expert-mode .top-bar .btn-outline-info {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+.container-fluid.expert-mode .top-bar .btn-outline-info:hover {
+  background-color: #3b82f6;
+  color: #fff;
+}
+
+.container-fluid.expert-mode .top-bar .btn-outline-danger {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+.container-fluid.expert-mode .top-bar .btn-outline-danger:hover {
+  background-color: #ef4444;
+  color: #fff;
+}
+
+
+
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .container-fluid.p-3 {
+    padding: 1rem;
+  }
+}

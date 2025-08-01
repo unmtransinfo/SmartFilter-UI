@@ -1,115 +1,140 @@
-import React from "react";
-import { MatchResult } from "../App";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useState } from "react";
+import { MatchResult } from "../HomePage";
 import MolImage from "./MolImage";
 
 interface SmartsFilterResultProps {
   matchCounts: MatchResult[];
-  mode: "filter" | "analyze1mol";
+  mode: string;
   totalMatched: number;
-  batch?: boolean;
-  view?: boolean;
-  depict?: boolean;
+  batch: boolean;
+  view: boolean;
 }
 
 const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
   matchCounts,
-  mode,
-  totalMatched,
-  batch = false,
-  view = false,
-  depict = false,
+  batch,
+  view,
 }) => {
-  const downloadCSV = () => {
-    const headers = ["Index", "Structure", "Molecule Name", "SMART Filter", "Result"];
-    const rows = matchCounts.map((result, idx) => [
-      idx + 1,
-      result.SMILES,
-      result.name,
-      result.Smart || "",
-      result.matched ? "Matched" : "Not Matched",
-    ]);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((r) => r.map((cell) => `"${cell}"`).join(",")),
-    ].join("\n");
+  if (matchCounts.length === 0) return null;
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "smarts_filter_results.csv");
-    link.click();
+  const totalPages = Math.ceil(matchCounts.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const currentResults = matchCounts.slice(startIndex, startIndex + rowsPerPage);
+
+  // Handlers
+  const handlePrev = () => {
+    setCurrentPage((p) => (p > 1 ? p - 1 : p));
   };
-  const sanitizeSmiles = (smiles: string) => smiles?.split(" ")[0].trim();
+
+  const handleNext = () => {
+    setCurrentPage((p) => (p < totalPages ? p + 1 : p));
+  };
+
+  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  // Open analyze page in new tab, save data in sessionStorage
+  const openAnalyzeNewTab = (result: MatchResult) => {
+    const key = `analyze_data_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    sessionStorage.setItem(key, JSON.stringify(result));
+    const url = `/analyze?key=${key}`;
+    window.open(url, "_blank");
+  };
+
   return (
-    <div className="card shadow-sm mt-3">
-      <div className="card-header d-flex justify-content-between align-items-center bg-gradient bg-primary text-white">
-        <span>Results ({totalMatched} molecules processed)</span>
-        {mode === "filter" && (
-          <button onClick={downloadCSV} className="btn btn-sm btn-outline-light">
-            Download CSV
-          </button>
-        )}
+    <div className="container mt-4">
+      <h3>Results ({matchCounts.length} molecules processed)</h3>
+
+      <div className="table-responsive">
+        <table className="table table-striped table-hover table-bordered">
+          <thead className="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              {view && <th>Structure</th>}
+              <th>Filter</th>
+              <th>Result</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentResults.map((result, idx) => (
+              <tr
+                key={startIndex + idx}
+                className={result.failed ? "table-danger" : "table-success"}
+              >
+                <td>{startIndex + idx + 1}</td>
+                <td>{result.name}</td>
+                {view && (
+                  <td>
+                    <MolImage smiles={result.SMILES} />
+                  </td>
+                )}
+                <td>{result.filterName || "Custom"}</td>
+                <td>{result.failed ? "Fail" : "Pass"}</td>
+                <td>
+                  <button
+                    className="btn btn-sm btn-outline-primary"
+                    onClick={() => openAnalyzeNewTab(result)}
+                  >
+                    Analyze
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      <div className="card-body p-0">
-        {mode === "filter" ? (
-          <div className="table-responsive">
-            <table className="table table-striped table-bordered mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>#</th>
-                  <th>Structure</th>
-                  <th>Molecule Name</th>
-                  <th>SMART Filter</th>
-                  <th>Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matchCounts.map((res, idx) => (
-                  <tr key={idx}>
-                    <td>{idx + 1}</td>
-                    <td>
-                      {view ? (
-                      <MolImage
-                        smiles={sanitizeSmiles(res.SMILES)}
-                        format="svg"  // or "png" — format independent of depict
-                        width={"100%"}
-                        height={"auto"}
-                        highlightAtoms={depict && res.highlightAtoms ? res.highlightAtoms : []}
-                      />
+      {/* Pagination Controls */}
+      <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-3">
+        <div>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          <button
+            className="btn btn-outline-secondary ms-2"
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
 
-                      ) : (
-                        sanitizeSmiles(res.SMILES)
-                      )}
-                    </td>
-                    <td>{res.name}</td>
-                    <td>{res.Smart || ""}</td>
-                    <td>
-                      <span className={`badge ${res.matched ? "bg-danger" : "bg-success"}`}>
-                        {res.matched ? "Fail" : "Pass"}
-                      </span>
-                    </td>
+        <div>
+          Page {currentPage} of {totalPages}
+        </div>
 
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="p-3">
-            <h6>Total Processed: {totalMatched}</h6>
-            <ul>
-              {matchCounts.map((res, idx) => (
-                <li key={idx}>
-                  {res.name} ({res.SMILES}) - {res.matched ? "Matched" : "Not Matched"}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div className="d-flex align-items-center gap-2">
+          <label htmlFor="rowsPerPageSelect" className="mb-0">
+            Show entries:
+          </label>
+          <select
+            id="rowsPerPageSelect"
+            className="form-select form-select-sm"
+            style={{ width: "auto" }}
+            value={rowsPerPage}
+            onChange={handleRowsPerPageChange}
+          >
+            {[5, 6, 7, 8, 9, 10].map((num) => (
+              <option key={num} value={num}>
+                {num}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   );

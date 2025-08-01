@@ -12,7 +12,7 @@ type MolImageProps = {
 const MolImage: React.FC<MolImageProps> = ({
   smiles,
   format = "svg",
-  width = 120,
+  width = "100%",
   height = "auto",
   highlightAtoms = [],
 }) => {

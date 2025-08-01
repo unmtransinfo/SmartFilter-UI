@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import InputData from "./InputData";
-import { AppMode, RunMode } from "../App";
+import { AppMode, RunMode } from "../HomePage";
 
 type SmartFilterLayoutProps = {
   mode: AppMode;
@@ -11,28 +11,21 @@ type SmartFilterLayoutProps = {
   onSubmit: (inputData: any) => void;
   setBatch: React.Dispatch<React.SetStateAction<boolean>>;
   setView: React.Dispatch<React.SetStateAction<boolean>>;
-  setDepict: React.Dispatch<React.SetStateAction<boolean>>;
   setPainsChecked: React.Dispatch<React.SetStateAction<boolean>>;
   view: boolean;
-  depict: boolean;
   children: React.ReactNode;
 };
 
 const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
   mode,
   setMode,
-  runmode,
-  setRunmode,
   onSubmit,
   setBatch,
   setView,
-  setDepict,
-  setPainsChecked,
   view,
-  depict,
   children,
 }) => {
-  const [delimiter, setDelimiter] = useState<string>(",");
+  const [delimiter, setDelimiter] = useState<string>("' '");
   const [smileCol, setSmileCol] = useState<number>(0);
   const [nameCol, setNameCol] = useState<number>(1);
 
@@ -85,35 +78,15 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
           <div className="card shadow-sm h-100">
             <div className="card-header bg-dark text-white">Configuration</div>
             <div className="card-body">
-              <div className="mb-3">
-                <label className="form-label">Run Mode</label>
-                <select
-                  value={runmode}
-                  onChange={(e) => setRunmode(e.target.value as RunMode)}
-                  className="form-select form-select-sm"
-                >
-                  <option value="filter">Filter</option>
-                  <option value="analyze1mol">Analyze One Molecule</option>
-                </select>
-              </div>
-
               <div className="row">
                 <div className="col-6">
                   <h6>Input</h6>
-                  <div className="mb-2">
-                    <label className="form-label">Format</label>
-                    <select className="form-select form-select-sm">
-                      <option>svg</option>
-                      <option>png</option>
-                      <option>jpg</option>
-                    </select>
-                  </div>
                   <div className="mb-2">
                     <label className="form-label">Delimiter</label>
                     <input
                       type="text"
                       className="form-control form-control-sm"
-                      placeholder=","
+                      placeholder="' ' or ','"
                       value={delimiter}
                       onChange={(e) => setDelimiter(e.target.value)}
                     />
@@ -163,19 +136,6 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
                     />
                     <label className="form-check-label" htmlFor="viewCheck">
                       View
-                    </label>
-                  </div>
-                  <div className="form-check mb-1">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="depictCheck"
-                      checked={depict}
-                      onChange={(e) => setDepict(e.target.checked)}
-                      disabled={!view}
-                    />
-                    <label className="form-check-label" htmlFor="depictCheck">
-                      Depict
                     </label>
                   </div>
 

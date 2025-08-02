@@ -2,6 +2,37 @@ import React, { useState } from "react";
 import { MatchResult } from "../HomePage";
 import MolImage from "./MolImage";
 
+const exportToCSV = (data: MatchResult[]) => {
+  if (data.length === 0) return;
+
+  const headers = ["Name", "SMILES", "Filter", "Result"];
+  const rows = data.map((item) => [
+    item.name,
+    item.SMILES,
+    item.filterName || "Custom",
+    item.failed ? "Fail" : "Pass",
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers, ...rows]
+      .map((e) =>
+        e
+          .map((field) => `"${(field || "").toString().replace(/"/g, '""')}"`)
+          .join(",")
+      )
+      .join("\n");
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "smarts_filter_results.csv");
+  document.body.appendChild(link); // Required for Firefox
+  link.click();
+  document.body.removeChild(link);
+};
+
+
 interface SmartsFilterResultProps {
   matchCounts: MatchResult[];
   mode: string;
@@ -27,22 +58,17 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
   const [globalPage, setGlobalPage] = useState(1);
   const [globalRowsPerPage, setGlobalRowsPerPage] = useState(5);
 
-  const [groupStates, setGroupStates] = useState(
-    Object.keys(grouped).reduce((acc, key) => {
-      acc[key] = { page: 1, rowsPerPage: 5 };
-      return acc;
-    }, {} as Record<string, { page: number; rowsPerPage: number }>)
-  );
+  const [groupStates, setGroupStates] = useState<Record<string, { page: number; rowsPerPage: number }>>({});
 
   const handleGroupPageChange = (key: string, direction: "next" | "prev") => {
     setGroupStates((prev) => {
-      const total = Math.ceil(grouped[key].length / prev[key].rowsPerPage);
-      const currentPage = prev[key].page;
-      const nextPage = direction === "next" ? currentPage + 1 : currentPage - 1;
+      const current = prev[key] || { page: 1, rowsPerPage: 5 };
+      const total = Math.ceil(grouped[key].length / current.rowsPerPage);
+      const nextPage = direction === "next" ? current.page + 1 : current.page - 1;
       return {
         ...prev,
         [key]: {
-          ...prev[key],
+          ...current,
           page: Math.max(1, Math.min(nextPage, total)),
         },
       };
@@ -53,7 +79,7 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
     setGroupStates((prev) => ({
       ...prev,
       [key]: {
-        ...prev[key],
+        ...(prev[key] || { page: 1 }),
         rowsPerPage: value,
         page: 1,
       },
@@ -85,6 +111,14 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
   return (
     <div className="container mt-4">
       <h3>Results ({matchCounts.length} molecules processed)</h3>
+      <div className="mb-3">
+        <button
+          className="btn btn-outline-success"
+          onClick={() => exportToCSV(matchCounts)}
+        >
+          Export to CSV
+        </button>
+      </div>
 
       {!batch && (
         <>
@@ -181,10 +215,7 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
       {batch && (
         <>
           {Object.entries(grouped).map(([group, items], groupIdx) => {
-            const { page, rowsPerPage } = groupStates[group] || {
-              page: 1,
-              rowsPerPage: 5,
-            };
+            const { page = 1, rowsPerPage = 5 } = groupStates[group] || {};
             const start = (page - 1) * rowsPerPage;
             const current = items.slice(start, start + rowsPerPage);
             const failedCount = items.filter((x) => x.failed).length;

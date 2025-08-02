@@ -5,6 +5,7 @@
   min-height: 100vh;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   transition: background 0.4s ease, color 0.4s ease;
+  padding: 0 1rem !important;
 }
 label{
   font-size: 1.1rem;
@@ -162,7 +163,6 @@ label.form-label,
 .top-bar {
   border-bottom: 1px solid #ccc;
   transition: background-color 0.4s ease, color 0.4s ease;
-  padding-bottom: 12px;
 }
 
 /* Light mode top bar */
@@ -227,11 +227,3 @@ label.form-label,
 }
 
 
-
-
-/* Responsive tweaks */
-@media (max-width: 768px) {
-  .container-fluid.p-3 {
-    padding: 1rem;
-  }
-}

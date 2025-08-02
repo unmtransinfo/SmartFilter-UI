@@ -27,7 +27,6 @@ function HomePage() {
   const [RDKit, setRDKit] = useState<any>(null);
   const [batch, setBatch] = useState(false);
   const [view, setView] = useState(false);
-  const [depict, setDepict] = useState(false);
   const [painsChecked, setPainsChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -151,7 +150,6 @@ const handleSubmit = async (inputData: any) => {
             const parts = line.trim().split(/\s+/);
             return { smarts: parts[0], name: parts[1] || "unknown" };
           });
-        console.log(smartsPatterns);
         // Append all smarts and names to query if needed (optional)
         smartsPatterns.forEach((s) => {
           query.append("smarts", s.smarts);
@@ -220,6 +218,7 @@ const handleSubmit = async (inputData: any) => {
       setBatch={setBatch}
       setView={setView}
       setPainsChecked={setPainsChecked}
+      batch={batch}
       view={view}
     >
       <SmartsFilterResult

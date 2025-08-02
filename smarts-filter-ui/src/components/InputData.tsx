@@ -1,7 +1,13 @@
-import React, { useRef, useState } from "react";
-import "../styles/InputData.css"; // We'll create this CSS file below
+import React from "react";
+import "../styles/InputData.css";
 
 const InputData = ({
+  smilesText,
+  setSmilesText,
+  smartsText,
+  setSmartsText,
+  presetFilters,
+  setPresetFilters,
   onSubmit,
   showSmarts = true,
   onFilterChange,
@@ -9,6 +15,12 @@ const InputData = ({
   smileCol,
   nameCol,
 }: {
+  smilesText: string;
+  setSmilesText: React.Dispatch<React.SetStateAction<string>>;
+  smartsText: string;
+  setSmartsText: React.Dispatch<React.SetStateAction<string>>;
+  presetFilters: string[];
+  setPresetFilters: React.Dispatch<React.SetStateAction<string[]>>;
   onSubmit: any;
   showSmarts?: boolean;
   onFilterChange?: (filters: string[]) => void;
@@ -16,12 +28,8 @@ const InputData = ({
   smileCol: number;
   nameCol: number;
 }) => {
-  const [smilesText, setSmilesText] = useState("");
-  const [smartsText, setSmartsText] = useState("");
-  const [presetFilters, setPresetFilters] = useState<string[]>([]);
-
-  const smilesFileInput = useRef<HTMLInputElement>(null);
-  const smartsFileInput = useRef<HTMLInputElement>(null);
+  const smilesFileInput = React.useRef<HTMLInputElement>(null);
+  const smartsFileInput = React.useRef<HTMLInputElement>(null);
 
   const presets = ["Pains", "Blake", "Glaxo", "Oprea", "Alarm NMR"];
 
@@ -64,13 +72,21 @@ const InputData = ({
           alert("Please provide SMILES data.");
           return;
         }
-        if (showSmarts && !smartsText.trim() && presetFilters.length === 0) {
-          alert("Please provide SMARTS or select a filter.");
+        if (
+          showSmarts &&
+          !presetFilters.length &&
+          !smartsText.trim()
+        ) {
+          alert(
+            "Please provide SMARTS input or select at least one filter."
+          );
           return;
         }
         onSubmit({
           smiles: { type: "text", content: smilesText },
-          smarts: showSmarts ? { type: "text", content: smartsText } : null,
+          smarts: showSmarts && smartsText.trim()
+            ? { type: "text", content: smartsText }
+            : null,
           filters: presetFilters,
           delimiter,
           smileCol,
@@ -106,7 +122,7 @@ const InputData = ({
           />
         </div>
 
-        {/* SMARTS Input and Filter Card */}
+        {/* Filter Checkbox Card */}
         <div className="input-card">
           <label className="input-label">Select SMART Filters:</label>
           <div className="preset-filters">
@@ -125,11 +141,8 @@ const InputData = ({
               </div>
             ))}
           </div>
-
           {showSmarts && (
-            <>
-              <hr className="divider" />
-              <label className="input-label">SMARTS Input:</label>
+            <div className="input-card">
               <button
                 type="button"
                 onClick={() => smartsFileInput.current?.click()}
@@ -151,9 +164,11 @@ const InputData = ({
                 placeholder="Paste SMARTS here or upload a file above"
                 className="input-textarea"
               />
-            </>
-          )}
+            </div>
+        )}
         </div>
+
+        {/* SMARTS Input Card (Expert Mode) */}
       </div>
 
       <div style={{ marginTop: 20 }}>

@@ -15,6 +15,10 @@ type SmartFilterLayoutProps = {
   setPainsChecked: React.Dispatch<React.SetStateAction<boolean>>;
   batch: boolean;
   view: boolean;
+  includePasses: boolean;
+  setIncludePasses: React.Dispatch<React.SetStateAction<boolean>>;
+  includeFails: boolean;
+  setIncludeFails: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
 };
 
@@ -27,28 +31,41 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
   setPainsChecked,
   batch,
   view,
+  includePasses,
+  setIncludePasses,
+  includeFails,
+  setIncludeFails,
   children,
 }) => {
   const [delimiter, setDelimiter] = useState<string>("' '");
   const [smileCol, setSmileCol] = useState<number>(0);
   const [nameCol, setNameCol] = useState<number>(1);
 
-  // Lifted states for controlled inputs
   const [smilesText, setSmilesText] = useState<string>("");
   const [smartsText, setSmartsText] = useState("");
   const [presetFilters, setPresetFilters] = useState<string[]>([]);
 
+  // Expert mode configs
+  const [hasHeader, setHasHeader] = useState(false);
+  const [excludeMolProps, setExcludeMolProps] = useState(false);
+  const [strictMode, setStrictMode] = useState(false);
+  const [uniqueAtoms, setUniqueAtoms] = useState(false);
+
+  // New expert mode input checkboxes
+  const [useKekule, setUseKekule] = useState(false);
+  const [useIsomeric, setUseIsomeric] = useState(false);
+
   const fetchDemoSmiles = async (): Promise<{ smiles: string; name: string }[]> => {
     try {
-      const response = await fetch('/data/demo.smi');
+      const response = await fetch("/data/demo.smi");
       const text = await response.text();
-      const lines = text.split('\n').filter(line => line.trim() !== '');
-      return lines.map(line => {
+      const lines = text.split("\n").filter((line) => line.trim() !== "");
+      return lines.map((line) => {
         const [smiles, ...nameParts] = line.trim().split(/\s+/);
-        return { smiles, name: nameParts.join(' ') || 'Unnamed' };
+        return { smiles, name: nameParts.join(" ") || "Unnamed" };
       });
     } catch (err) {
-      console.error('Failed to fetch demo.smi:', err);
+      console.error("Failed to fetch demo.smi:", err);
       return [];
     }
   };
@@ -59,10 +76,12 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
     setView(true);
 
     const demoData = await fetchDemoSmiles();
-    const demoSmilesText = demoData.map(({ smiles, name }) => `${smiles} ${name}`).join('\n');
+    const demoSmilesText = demoData
+      .map(({ smiles, name }) => `${smiles} ${name}`)
+      .join("\n");
 
-    setSmilesText(demoSmilesText);      
-    setPresetFilters(["Pains"]);     
+    setSmilesText(demoSmilesText);
+    setPresetFilters(["Pains"]);
 
     onSubmit({
       smiles: { type: "text", content: demoSmilesText },
@@ -71,6 +90,14 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
       delimiter,
       smileCol,
       nameCol,
+      config: {
+        hasHeader,
+        excludeMolProps,
+        strictMode,
+        uniqueAtoms,
+        useKekule,
+        useIsomeric,
+      },
     });
   };
 
@@ -93,7 +120,7 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
           </div>
         </div>
         <div className="col-md-6 text-center">
-          <img src="/filter.png" alt="logo" width={60}/>
+          <img src="/filter.png" alt="logo" width={60} />
           <span className="fs-4 fw-bold logo-title">SmartFilter</span>
         </div>
         <div className="col-md-3 text-end">
@@ -116,19 +143,19 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
           <div className="card shadow-sm h-100">
             <div className="card-header bg-primary text-white">Input Data</div>
             <div className="card-body">
-            <InputData
-              smilesText={smilesText}
-              setSmilesText={setSmilesText}
-              smartsText={smartsText}
-              setSmartsText={setSmartsText}
-              presetFilters={presetFilters}
-              setPresetFilters={setPresetFilters}
-              onSubmit={onSubmit}
-              showSmarts={mode === "expert"}
-              delimiter={delimiter}
-              smileCol={smileCol}
-              nameCol={nameCol}
-            />
+              <InputData
+                smilesText={smilesText}
+                setSmilesText={setSmilesText}
+                smartsText={smartsText}
+                setSmartsText={setSmartsText}
+                presetFilters={presetFilters}
+                setPresetFilters={setPresetFilters}
+                onSubmit={onSubmit}
+                showSmarts={mode === "expert"}
+                delimiter={delimiter}
+                smileCol={smileCol}
+                nameCol={nameCol}
+              />
             </div>
           </div>
         </div>
@@ -140,34 +167,94 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
               <div className="row">
                 <div className="col-6">
                   <h6>Input</h6>
-                  <div className="mb-2">
-                    <label className="form-label">Delimiter</label>
+
+                  {/* Small inline checkboxes for Delim, Smile Col, Name Col */}
+                  <div className="mb-2 d-flex align-items-center gap-2">
+                    <label className="form-label mb-0" htmlFor="delimiterInput" style={{ minWidth: 60 }}>
+                      Delimiter
+                    </label>
                     <input
+                      id="delimiterInput"
                       type="text"
                       className="form-control form-control-sm"
                       placeholder="' ' or ','"
                       value={delimiter}
                       onChange={(e) => setDelimiter(e.target.value)}
+                      style={{ maxWidth: 80 }}
                     />
                   </div>
-                  <div className="mb-2">
-                    <label className="form-label">SMILES Col</label>
+
+                  <div className="mb-2 d-flex align-items-center gap-2">
+                    <label className="form-label mb-0" htmlFor="smileColInput" style={{ minWidth: 60 }}>
+                      SMILES Col
+                    </label>
                     <input
+                      id="smileColInput"
                       type="number"
                       className="form-control form-control-sm"
                       value={smileCol}
                       onChange={(e) => setSmileCol(Number(e.target.value))}
+                      style={{ maxWidth: 80 }}
                     />
                   </div>
-                  <div className="mb-2">
-                    <label className="form-label">Name Col</label>
+
+                  <div className="mb-2 d-flex align-items-center gap-2">
+                    <label className="form-label mb-0" htmlFor="nameColInput" style={{ minWidth: 60 }}>
+                      Name Col
+                    </label>
                     <input
+                      id="nameColInput"
                       type="number"
                       className="form-control form-control-sm"
                       value={nameCol}
                       onChange={(e) => setNameCol(Number(e.target.value))}
+                      style={{ maxWidth: 80 }}
                     />
                   </div>
+
+                  {/* Has Header checkbox moved here for all modes */}
+                  <div className="form-check mb-2">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      id="headerCheck"
+                      checked={hasHeader}
+                      onChange={(e) => setHasHeader(e.target.checked)}
+                    />
+                    <label className="form-check-label" htmlFor="headerCheck">
+                      Has Header
+                    </label>
+                  </div>
+
+                  {/* Kekule and Isomeric SMILES checkboxes - expert only */}
+                  {mode === "expert" && (
+                    <>
+                      <div className="form-check mb-2">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="kekuleCheck"
+                          checked={useKekule}
+                          onChange={(e) => setUseKekule(e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="kekuleCheck">
+                          Kekule
+                        </label>
+                      </div>
+                      <div className="form-check mb-2">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="isomericCheck"
+                          checked={useIsomeric}
+                          onChange={(e) => setUseIsomeric(e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="isomericCheck">
+                          Isomeric
+                        </label>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="col-1 border-start"></div>
@@ -199,53 +286,70 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
                     </label>
                   </div>
 
-                    {mode === "expert" && (
-                      <>
-                        <div className="form-check mb-1">
-                          <input className="form-check-input" type="checkbox" id="showMatch" />
-                          <label className="form-check-label" htmlFor="showMatch">
-                            Show Matches
-                          </label>
-                        </div>
-                        <div className="form-check mb-1">
-                          <input className="form-check-input" type="checkbox" id="passCheck" />
-                          <label className="form-check-label" htmlFor="passCheck">
-                            Include Passes
-                          </label>
-                        </div>
-                        <div className="form-check mb-1">
-                          <input className="form-check-input" type="checkbox" id="failCheck" />
-                          <label className="form-check-label" htmlFor="failCheck">
-                            Include Fails
-                          </label>
-                        </div>
-                        <div className="form-check mb-1">
-                          <input className="form-check-input" type="checkbox" id="headerCheck" />
-                          <label className="form-check-label" htmlFor="headerCheck">
-                            Has Header
-                          </label>
-                        </div>
-                        <div className="form-check mb-1">
-                          <input className="form-check-input" type="checkbox" id="excludeMol" />
-                          <label className="form-check-label" htmlFor="excludeMol">
-                            Exclude MolProps
-                          </label>
-                        </div>
-                        <div className="form-check mb-1">
-                          <input className="form-check-input" type="checkbox" id="strictCheck" />
-                          <label className="form-check-label" htmlFor="strictCheck">
-                            Strict Mode
-                          </label>
-                        </div>
-                        <div className="form-check mb-1">
-                          <input className="form-check-input" type="checkbox" id="uniqueAtoms" />
-                          <label className="form-check-label" htmlFor="uniqueAtoms">
-                            Unique Atoms
-                          </label>
-                        </div>
-                      </>
-                    )}
-
+                  {mode === "expert" && (
+                    <>
+                      <div className="form-check mb-1">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="passCheck"
+                          checked={includePasses}
+                          onChange={(e) => setIncludePasses(e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="passCheck">
+                          Include Passes
+                        </label>
+                      </div>
+                      <div className="form-check mb-1">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="failCheck"
+                          checked={includeFails}
+                          onChange={(e) => setIncludeFails(e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="failCheck">
+                          Include Fails
+                        </label>
+                      </div>
+                      <div className="form-check mb-1">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="excludeMol"
+                          checked={excludeMolProps}
+                          onChange={(e) => setExcludeMolProps(e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="excludeMol">
+                          Exclude MolProps
+                        </label>
+                      </div>
+                      <div className="form-check mb-1">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="strictCheck"
+                          checked={strictMode}
+                          onChange={(e) => setStrictMode(e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="strictCheck">
+                          Strict Mode
+                        </label>
+                      </div>
+                      <div className="form-check mb-1">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="uniqueAtoms"
+                          checked={uniqueAtoms}
+                          onChange={(e) => setUniqueAtoms(e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="uniqueAtoms">
+                          Unique Atoms
+                        </label>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

@@ -32,22 +32,33 @@ const exportToCSV = (data: MatchResult[]) => {
   document.body.removeChild(link);
 };
 
-
 interface SmartsFilterResultProps {
   matchCounts: MatchResult[];
   mode: string;
   totalMatched: number;
   batch: boolean;
   view: boolean;
+  includePasses: boolean;
+  includeFails: boolean;
 }
 
 const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
   matchCounts,
   batch,
   view,
+  includePasses,
+  includeFails,
 }) => {
+  // Filter results according to includePasses and includeFails
+  const filteredResults = matchCounts.filter((item) => {
+    if (item.failed && !includeFails) return false;
+    if (!item.failed && !includePasses) return false;
+    return true;
+  });
+
+  // Group filtered results if batch mode is on
   const grouped = batch
-    ? matchCounts.reduce((acc, item) => {
+    ? filteredResults.reduce((acc, item) => {
         const group = item.filterName || "Custom";
         if (!acc[group]) acc[group] = [];
         acc[group].push(item);
@@ -55,16 +66,25 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
       }, {} as Record<string, MatchResult[]>)
     : {};
 
+  // Pagination states for global (non-batch) mode
   const [globalPage, setGlobalPage] = useState(1);
   const [globalRowsPerPage, setGlobalRowsPerPage] = useState(5);
 
-  const [groupStates, setGroupStates] = useState<Record<string, { page: number; rowsPerPage: number }>>({});
+  // Pagination states for each group in batch mode
+  const [groupStates, setGroupStates] = useState<
+    Record<string, { page: number; rowsPerPage: number }>
+  >({});
 
-  const handleGroupPageChange = (key: string, direction: "next" | "prev") => {
+  // Pagination controls for batch groups
+  const handleGroupPageChange = (
+    key: string,
+    direction: "next" | "prev"
+  ) => {
     setGroupStates((prev) => {
       const current = prev[key] || { page: 1, rowsPerPage: 5 };
       const total = Math.ceil(grouped[key].length / current.rowsPerPage);
-      const nextPage = direction === "next" ? current.page + 1 : current.page - 1;
+      const nextPage =
+        direction === "next" ? current.page + 1 : current.page - 1;
       return {
         ...prev,
         [key]: {
@@ -86,17 +106,22 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
     }));
   };
 
+  // Pagination controls for global
   const handleGlobalPageChange = (direction: "next" | "prev") => {
-    const totalPages = Math.ceil(matchCounts.length / globalRowsPerPage);
-    const newPage = direction === "next" ? globalPage + 1 : globalPage - 1;
+    const totalPages = Math.ceil(filteredResults.length / globalRowsPerPage);
+    const newPage =
+      direction === "next" ? globalPage + 1 : globalPage - 1;
     setGlobalPage(Math.max(1, Math.min(newPage, totalPages)));
   };
 
-  const handleGlobalRowsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleGlobalRowsChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     setGlobalRowsPerPage(Number(e.target.value));
     setGlobalPage(1);
   };
 
+  // Open molecule analysis in a new tab
   const openAnalyzeNewTab = (result: MatchResult) => {
     const key = `analyze_data_${Date.now()}_${Math.random()
       .toString(36)
@@ -110,11 +135,11 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
 
   return (
     <div className="container mt-4">
-      <h3>Results ({matchCounts.length} molecules processed)</h3>
+      <h3>Results ({filteredResults.length} molecules processed)</h3>
       <div className="mb-3">
         <button
           className="btn btn-outline-success"
-          onClick={() => exportToCSV(matchCounts)}
+          onClick={() => exportToCSV(filteredResults)}
         >
           Export to CSV
         </button>
@@ -135,7 +160,7 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {matchCounts
+                {filteredResults
                   .slice(
                     (globalPage - 1) * globalRowsPerPage,
                     globalPage * globalRowsPerPage
@@ -145,7 +170,9 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
                       key={idx}
                       className={result.failed ? "table-danger" : "table-success"}
                     >
-                      <td>{(globalPage - 1) * globalRowsPerPage + idx + 1}</td>
+                      <td>
+                        {(globalPage - 1) * globalRowsPerPage + idx + 1}
+                      </td>
                       <td>{result.name}</td>
                       {view && (
                         <td>
@@ -180,14 +207,17 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
               <button
                 className="btn btn-outline-secondary ms-2"
                 onClick={() => handleGlobalPageChange("next")}
-                disabled={globalPage * globalRowsPerPage >= matchCounts.length}
+                disabled={
+                  globalPage * globalRowsPerPage >= filteredResults.length
+                }
               >
                 Next
               </button>
             </div>
 
             <div>
-              Page {globalPage} of {Math.ceil(matchCounts.length / globalRowsPerPage)}
+              Page {globalPage} of{" "}
+              {Math.ceil(filteredResults.length / globalRowsPerPage)}
             </div>
 
             <div className="d-flex align-items-center gap-2">
@@ -241,7 +271,9 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
                       {current.map((result, idx) => (
                         <tr
                           key={idx}
-                          className={result.failed ? "table-danger" : "table-success"}
+                          className={
+                            result.failed ? "table-danger" : "table-success"
+                          }
                         >
                           <td>{start + idx + 1}</td>
                           {view && (

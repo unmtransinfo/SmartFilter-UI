@@ -12,13 +12,28 @@ type SmartFilterLayoutProps = {
   onSubmit: (inputData: any) => void;
   setBatch: React.Dispatch<React.SetStateAction<boolean>>;
   setView: React.Dispatch<React.SetStateAction<boolean>>;
-  setPainsChecked: React.Dispatch<React.SetStateAction<boolean>>;
   batch: boolean;
   view: boolean;
   includePasses: boolean;
   setIncludePasses: React.Dispatch<React.SetStateAction<boolean>>;
   includeFails: boolean;
   setIncludeFails: React.Dispatch<React.SetStateAction<boolean>>;
+  excludeMolProps: boolean;
+  setExcludeMolProps: React.Dispatch<React.SetStateAction<boolean>>;
+  strictMode: boolean;
+  setStrictMode: React.Dispatch<React.SetStateAction<boolean>>;
+  non_zero_row: boolean;
+  setNonZeroRows: React.Dispatch<React.SetStateAction<boolean>>;
+  uniqueAtoms: boolean;
+  setUniqueAtoms: React.Dispatch<React.SetStateAction<boolean>>;
+  useKekule: boolean;
+  setUseKekule: React.Dispatch<React.SetStateAction<boolean>>;
+  useIsomeric: boolean;
+  setUseIsomeric: React.Dispatch<React.SetStateAction<boolean>>;
+  hasHeader: boolean;
+  setHasHeader: React.Dispatch<React.SetStateAction<boolean>>;
+  errorMessage: string[];
+  setErrorMessage: React.Dispatch<React.SetStateAction<string[]>>;
   children: React.ReactNode;
 };
 
@@ -28,13 +43,28 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
   onSubmit,
   setBatch,
   setView,
-  setPainsChecked,
   batch,
   view,
   includePasses,
   setIncludePasses,
   includeFails,
   setIncludeFails,
+  hasHeader,
+  setHasHeader,
+  excludeMolProps,
+  setExcludeMolProps,
+  non_zero_row,
+  setNonZeroRows,
+  strictMode,
+  setStrictMode,
+  uniqueAtoms,
+  setUniqueAtoms,
+  useKekule,
+  setUseKekule,
+  useIsomeric,
+  setUseIsomeric,
+  errorMessage,
+  setErrorMessage,
   children,
 }) => {
   const [delimiter, setDelimiter] = useState<string>("' '");
@@ -44,17 +74,9 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
   const [smilesText, setSmilesText] = useState<string>("");
   const [smartsText, setSmartsText] = useState("");
   const [presetFilters, setPresetFilters] = useState<string[]>([]);
-
-  // Expert mode configs
-  const [hasHeader, setHasHeader] = useState(false);
-  const [excludeMolProps, setExcludeMolProps] = useState(false);
-  const [strictMode, setStrictMode] = useState(false);
-  const [uniqueAtoms, setUniqueAtoms] = useState(false);
-
-  // New expert mode input checkboxes
-  const [useKekule, setUseKekule] = useState(false);
-  const [useIsomeric, setUseIsomeric] = useState(false);
-
+    const addError = (msg: string) => {
+    setErrorMessage((prev) => [...prev, msg]);
+  };
   const fetchDemoSmiles = async (): Promise<{ smiles: string; name: string }[]> => {
     try {
       const response = await fetch("/data/demo.smi");
@@ -66,41 +88,49 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
       });
     } catch (err) {
       console.error("Failed to fetch demo.smi:", err);
+     addError("Failed to load demo SMILES data.");
       return [];
     }
   };
 
   const handleDemoClick = async () => {
-    setPainsChecked(true);
     setBatch(true);
     setView(true);
 
     const demoData = await fetchDemoSmiles();
+    if (demoData.length === 0) {
+      addError("Demo data is empty or could not be loaded.");
+      return;
+    }
     const demoSmilesText = demoData
       .map(({ smiles, name }) => `${smiles} ${name}`)
       .join("\n");
 
     setSmilesText(demoSmilesText);
     setPresetFilters(["Pains"]);
-
-    onSubmit({
-      smiles: { type: "text", content: demoSmilesText },
-      smarts: null,
-      filters: ["Pains"],
-      delimiter,
-      smileCol,
-      nameCol,
-      config: {
-        hasHeader,
-        excludeMolProps,
-        strictMode,
-        uniqueAtoms,
-        useKekule,
-        useIsomeric,
-      },
-    });
+    setErrorMessage([]);
+    try {
+      onSubmit({
+        smiles: { type: "text", content: demoSmilesText },
+        smarts: null,
+        filters: ["Pains"],
+        delimiter,
+        smileCol,
+        nameCol,
+        config: {
+          hasHeader,
+          excludeMolProps,
+          strictMode,
+          non_zero_row,
+          uniqueAtoms,
+          useKekule,
+          useIsomeric,
+        },
+      });
+    } catch (err) {
+      addError("Error running demo: " + (err as Error).message);
+    }
   };
-
   return (
     <div className={`container-fluid p-3 ${mode === "expert" ? "expert-mode" : ""}`}>
       {/* Top Bar */}
@@ -130,7 +160,9 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
           </button>
           <button
             className="btn btn-outline-danger btn-sm mx-1"
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              setErrorMessage([]);
+              window.location.reload()}}
           >
             Reset
           </button>
@@ -168,7 +200,6 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
                 <div className="col-6">
                   <h6>Input</h6>
 
-                  {/* Small inline checkboxes for Delim, Smile Col, Name Col */}
                   <div className="mb-2 d-flex align-items-center gap-2">
                     <label className="form-label mb-0" htmlFor="delimiterInput" style={{ minWidth: 60 }}>
                       Delimiter
@@ -212,7 +243,6 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
                     />
                   </div>
 
-                  {/* Has Header checkbox moved here for all modes */}
                   <div className="form-check mb-2">
                     <input
                       className="form-check-input"
@@ -340,6 +370,19 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
                         <input
                           className="form-check-input"
                           type="checkbox"
+                          id="non_zero"
+                          checked={non_zero_row}
+                          onChange={(e) => setNonZeroRows(e.target.checked)}
+                          >
+                        </input>
+                        <label className="form-check-label" htmlFor="non_zero">
+                          non-zero-rows
+                        </label>
+                      </div>
+                      <div className="form-check mb-1">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
                           id="uniqueAtoms"
                           checked={uniqueAtoms}
                           onChange={(e) => setUniqueAtoms(e.target.checked)}
@@ -352,6 +395,27 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
                   )}
                 </div>
               </div>
+                {errorMessage.length >0 && (
+                  <div className="row mb-3">
+                    <div className="col">
+                      <div className="card border-danger shadow-sm">
+                        <div className="card-header bg-danger text-white">
+                          Error
+                        </div>
+                        <div className="card-body">
+                          <textarea
+                            className="form-control text-danger"
+                            value={errorMessage}
+                            readOnly
+                            rows={3}
+                            style={{ resize: "none", backgroundColor: "#ffe6e6" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
             </div>
           </div>
         </div>

@@ -163,8 +163,8 @@ const handleSubmit = async (inputData: any) => {
       if (inputData.config?.excludeMolProps) {
         query.append("exclude_molprops", inputData.config.excludeMolProps ? "true" : "false");
       }
-
-      const res = await fetch(`http://localhost:8000/api/v1/smarts_filter/get_filterpains?${query}`);
+      const res = await fetch(`https://chiltepin.health.unm.edu/smartsfilter/api/v1/smarts_filter/get_filterpains
+?${query}`);
       if(res.status !==200){
         addError("Error"+res.status+res.statusText)
         return;
@@ -219,10 +219,10 @@ const handleSubmit = async (inputData: any) => {
       });
       appendExpertParams(query);
 
-      const json = await safeFetch(`http://localhost:8000/api/v1/smarts_filter/get_multi_matchcounts?${query}`);
-      if(json === null){
-        return;
-      }
+      const res = await fetch(`https://chiltepin.health.unm.edu/smartsfilter/api/v1/smarts_filter/get_multi_matchcounts?${query}`);
+
+      const json = await res.json();
+
       json.forEach((entry: any) => {
         try {
           const mol = RDKit.get_mol(entry.smiles);
@@ -281,7 +281,7 @@ const handleSubmit = async (inputData: any) => {
       });
       appendExpertParams(expertQuery);
 
-      const expertRes = await fetch(`http://localhost:8000/api/v1/smarts_filter/get_multi_matchcounts?${expertQuery}`);
+      const expertRes = await fetch(`https://chiltepin.health.unm.edu/smartsfilter/api/v1/smarts_filter/get_multi_matchcounts?${expertQuery}`);
       const expertJson = await expertRes.json();
       expertJson.forEach((entry: any) => {
         try {

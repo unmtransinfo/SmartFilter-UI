@@ -1,25 +1,23 @@
 # Use Node LTS Alpine
 FROM node:22-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files first for caching
+# Copy package files for caching
 COPY package*.json ./
+COPY tsconfig.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy all frontend files
+# Copy the rest of the frontend
 COPY . .
 
-# Build the frontend
+# Build production assets
 RUN npm run build
 
-# Expose port for serving
-EXPOSE 3000
-
-# Serve built files using a simple static server
+# Use a simple static server to serve built files
 RUN npm install -g serve
+EXPOSE 3000
 CMD ["serve", "-s", "dist", "-l", "3000"]
 

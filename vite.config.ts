@@ -5,13 +5,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: '/smartsfilter/',
   plugins: [react()],
-  build: {
-    outDir: '../dist',     // <-- output relative to root
-    emptyOutDir: true
-  },
   server: {
     host: true,
     port: 3000
   }
 })
-

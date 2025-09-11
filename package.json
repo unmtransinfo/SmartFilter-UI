@@ -2,7 +2,7 @@
   "name": "smarts-filter-ui",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/smartsfilter",
+  "homepage": "/smartsfilter/",
   "dependencies": {
     "@craco/craco": "^7.1.0",
     "@rdkit/rdkit": "^2025.3.2-1.0.0",

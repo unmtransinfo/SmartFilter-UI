@@ -3,6 +3,7 @@ const webpack = require("webpack");
 module.exports = {
   webpack: {
     configure: (config) => {
+      // Keep your polyfills
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
@@ -10,7 +11,7 @@ module.exports = {
         crypto: require.resolve("crypto-browserify"),
         stream: require.resolve("stream-browserify"),
         process: require.resolve("process/browser.js"),
-        vm: require.resolve("vm-browserify"), // ✅ Add this line
+        vm: require.resolve("vm-browserify"),
       };
 
       config.plugins = [
@@ -21,7 +22,11 @@ module.exports = {
         }),
       ];
 
+      // 👇 Fix asset URLs by setting public path
+      config.output.publicPath = "/smartsfilter/";
+
       return config;
     },
   },
 };
+

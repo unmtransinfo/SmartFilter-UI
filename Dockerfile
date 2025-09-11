@@ -9,4 +9,4 @@ RUN npm run build
 # Use a simple static server
 RUN npm install -g serve
 EXPOSE 3000
-CMD ["serve", "-s", "build", "-l", "3000"]
+CMD ["serve", "-s", "build"]

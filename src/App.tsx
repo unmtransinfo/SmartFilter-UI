@@ -6,7 +6,7 @@ import AnalyzePage from "./components/AnalyzeMoleculePage"; // Full molecule ana
 
 function App() {
   return (
-    <Router>
+    <Router basename="/smartsfilter">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/analyze" element={<AnalyzePage />} />

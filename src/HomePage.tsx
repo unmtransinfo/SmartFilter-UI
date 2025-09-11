@@ -62,19 +62,20 @@ function HomePage() {
     return () => window.removeEventListener("unhandledrejection", handler);
   }, []);
   useEffect(() => {
-    const loadRDKit = async () => {
-      try {
-        const RDKitModule = await initRDKitModule({
-          locateFile: () => "/RDKit_minimal.wasm",
-        });
-        setRDKit(RDKitModule);
-        console.log("RDKit.js initialized in App");
-      } catch (err) {
-        console.error("RDKit.js init failed", err);
-      }
-    };
-    loadRDKit();
-  }, []);
+  const loadRDKit = async () => {
+    try {
+      const RDKitModule = await initRDKitModule({
+        locateFile: (file: string) => `${process.env.PUBLIC_URL}/${file}`,
+      });
+      setRDKit(RDKitModule);
+      console.log("RDKit.js initialized in App");
+    } catch (err) {
+      console.error("RDKit.js init failed", err);
+    }
+  };
+  loadRDKit();
+}, []);
+
 
   const readFileContent = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {

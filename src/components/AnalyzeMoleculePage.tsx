@@ -24,18 +24,21 @@ const AnalyzePage: React.FC = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(10);
 
   useEffect(() => {
-    const loadRDKit = async () => {
-      try {
-        const RDKitModule = await initRDKitModule({
-          locateFile: () => "/RDKit_minimal.wasm",
-        });
-        setRDKit(RDKitModule);
-      } catch (err) {
-        console.error("RDKit.js init failed", err);
-      }
-    };
-    loadRDKit();
-  }, []);
+  const loadRDKit = async () => {
+    try {
+      const RDKitModule = await initRDKitModule({
+        locateFile: (file: string) =>
+          `${process.env.PUBLIC_URL}/${file}`, // resolves to /smartsfilter/RDKit_minimal.wasm
+      });
+      setRDKit(RDKitModule);
+      console.log("RDKit.js initialized in App");
+    } catch (err) {
+      console.error("RDKit.js init failed", err);
+    }
+  };
+  loadRDKit();
+}, []);
+
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);

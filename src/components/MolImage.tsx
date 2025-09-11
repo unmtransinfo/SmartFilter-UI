@@ -21,19 +21,21 @@ const MolImage: React.FC<MolImageProps> = ({
   const [svgData, setSvgData] = useState<string>("");
 
   useEffect(() => {
-    const loadRDKit = async () => {
-      try {
-        const RDKitModule = await initRDKitModule({
-          locateFile: () => "/RDKit_minimal.wasm",
-        });
-        setRDKit(RDKitModule);
-        console.log("RDKit.js initialized in MolImage");
-      } catch (err) {
-        console.error("RDKit.js init failed", err);
-      }
-    };
-    loadRDKit();
-  }, []);
+  const loadRDKit = async () => {
+    try {
+      const RDKitModule = await initRDKitModule({
+        locateFile: (file: string) =>
+          `${process.env.PUBLIC_URL}/${file}`, // resolves to /smartsfilter/RDKit_minimal.wasm
+      });
+      setRDKit(RDKitModule);
+      console.log("RDKit.js initialized in App");
+    } catch (err) {
+      console.error("RDKit.js init failed", err);
+    }
+  };
+  loadRDKit();
+}, []);
+
 
 useEffect(() => {
   if (

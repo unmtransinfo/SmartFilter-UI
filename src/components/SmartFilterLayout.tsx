@@ -79,7 +79,7 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
   };
   const fetchDemoSmiles = async (): Promise<{ smiles: string; name: string }[]> => {
     try {
-      const response = await fetch("/data/demo.smi");
+      const response = await fetch(`${process.env.PUBLIC_URL}/data/demo.smi`);
       const text = await response.text();
       const lines = text.split("\n").filter((line) => line.trim() !== "");
       return lines.map((line) => {
@@ -150,7 +150,7 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
           </div>
         </div>
         <div className="col-md-6 text-center">
-          <img src="/filter.png" alt="logo" width={60} />
+          <img src={process.env.PUBLIC_URL + "/filter.png"} alt="logo" width={60} />
           <span className="fs-4 fw-bold logo-title">SmartFilter</span>
         </div>
         <div className="col-md-3 text-end">

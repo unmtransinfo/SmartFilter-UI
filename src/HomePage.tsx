@@ -196,7 +196,7 @@ const handleSubmit = async (inputData: any) => {
 
     // BLAKE Filter API call with expert params
     if (runmode === "filter" && blakeIsChecked) {
-      const smartsText = await fetch("/data/ursu_pains.sma").then(r => {
+      const smartsText = await fetch(`${process.env.PUBLIC_URL}/data/ursu_pains.sma`).then(r => {
         if (!r.ok) {
           addError("Error"+r.status+r.text())
         }
@@ -379,20 +379,21 @@ const handleSubmit = async (inputData: any) => {
       }}
     >
       <img
-        src="/logo.png"
+        src={`${process.env.PUBLIC_URL}/logo.png`}
         alt="RDKit Logo"
         style={{ height: "auto", width: "100px" }}
       />
       <img
-        src="/logo192.png"
+        src={`${process.env.PUBLIC_URL}/logo192.png`}
         alt="React Logo"
-        style={{height: "auto", width: "100px"}}
+        style={{ height: "auto", width: "100px" }}
       />
       <img
-        src="/University_of_New_Mexico_logo.svg"
+        src={`${process.env.PUBLIC_URL}/University_of_New_Mexico_logo.svg`}
         alt="UNM Logo"
-        style={{height: "auto", width: "200px"}}
+        style={{ height: "auto", width: "200px" }}
       />
+
     </footer>
     </SmartFilterLayout>
     

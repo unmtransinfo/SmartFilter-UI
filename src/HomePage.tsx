@@ -379,17 +379,17 @@ const handleSubmit = async (inputData: any) => {
       }}
     >
       <img
-        src={`${process.env.PUBLIC_URL}/logo.png`}
+        src={`${process.env.PUBLIC_URL}/smartsfilter/logo.png`}
         alt="RDKit Logo"
         style={{ height: "auto", width: "100px" }}
       />
       <img
-        src={`${process.env.PUBLIC_URL}/logo192.png`}
+        src={`${process.env.PUBLIC_URL}/smartsfilter/logo192.png`}
         alt="React Logo"
         style={{ height: "auto", width: "100px" }}
       />
       <img
-        src={`${process.env.PUBLIC_URL}/University_of_New_Mexico_logo.svg`}
+        src={`${process.env.PUBLIC_URL}/smartsfilter/University_of_New_Mexico_logo.svg`}
         alt="UNM Logo"
         style={{ height: "auto", width: "200px" }}
       />

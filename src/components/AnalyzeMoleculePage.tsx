@@ -12,7 +12,7 @@ interface MatchDetail {
 const AnalyzePage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [RDKit, setRDKit] = useState<any>(null);
+  const [setRDKit] = useState<any>(null);
   const [results, setResults] = useState<MatchDetail[]>([]);
   const [molName, setMolName] = useState<string>("");
   const [molSmiles, setMolSmiles] = useState<string>("");

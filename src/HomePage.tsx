@@ -44,15 +44,6 @@ function HomePage() {
   setErrorMessage((prev) => [...prev, msg]);
 };
 
-
-  const safeFetch = async (url: string) => {
-    const res = await fetch(url);
-    if (!res.ok) {
-      addError("Error "+res.status+res.statusText);
-      return null;
-    }
-    return res.json();
-  };
   useEffect(() => {
     const loadRDKit = async () => {
       const baseUrl =

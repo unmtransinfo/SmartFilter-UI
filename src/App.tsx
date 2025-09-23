@@ -1,5 +1,4 @@
 // App.tsx
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./HomePage"; // Main filtering UI
 import AnalyzePage from "./components/AnalyzeMoleculePage"; // Full molecule analysis view

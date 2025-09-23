@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import SmartFilterLayout from "./components/SmartFilterLayout";
 import SmartsFilterResult from "./components/SmartsFilterResult";
-import initRDKitModule from "@rdkit/rdkit";
 
 export type MatchResult = {
   name: string;
@@ -55,26 +54,26 @@ function HomePage() {
     return res.json();
   };
   useEffect(() => {
-    const handler = (e: PromiseRejectionEvent) => {
-      setErrorMessage(e.reason?.message || "Unexpected error.");
+    const loadRDKit = async () => {
+      const baseUrl =
+        "https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist";
+
+      try {
+        const RDKitModule = await (window as any).initRDKitModule({
+          locateFile: (file: string) => `${baseUrl}/${file}`,
+        });
+
+        console.log("✅ RDKit ready:", RDKitModule.version());
+        setRDKit(RDKitModule);
+      } catch (err) {
+        console.error("❌ RDKit init failed:", err);
+      }
     };
-    window.addEventListener("unhandledrejection", handler);
-    return () => window.removeEventListener("unhandledrejection", handler);
+
+    loadRDKit();
   }, []);
-  useEffect(() => {
-  const loadRDKit = async () => {
-    try {
-      const RDKitModule = await initRDKitModule({
-        locateFile: (file: string) => `${process.env.PUBLIC_URL}/${file}`,
-      });
-      setRDKit(RDKitModule);
-      console.log("RDKit.js initialized in App");
-    } catch (err) {
-      console.error("RDKit.js init failed", err);
-    }
-  };
-  loadRDKit();
-}, []);
+
+
 
 
   const readFileContent = (file: File): Promise<string> =>
@@ -196,7 +195,7 @@ const handleSubmit = async (inputData: any) => {
 
     // BLAKE Filter API call with expert params
     if (runmode === "filter" && blakeIsChecked) {
-      const smartsText = await fetch(`${process.env.PUBLIC_URL}/data/ursu_pains.sma`).then(r => {
+      const smartsText = await fetch(`${import.meta.env.PUBLIC_URL}/data/ursu_pains.sma`).then(r => {
         if (!r.ok) {
           addError("Error"+r.status+r.text())
         }
@@ -379,12 +378,12 @@ const handleSubmit = async (inputData: any) => {
       }}
     >
       <img
-        src={`${process.env.PUBLIC_URL}/logo.png`}
+        src={`${import.meta.env.PUBLIC_URL}/logo.png`}
         alt="RDKit Logo"
         style={{ height: "auto", width: "100px" }}
       />
       <img
-        src={`${process.env.PUBLIC_URL}/logo192.png`}
+        src={`${import.meta.env.PUBLIC_URL}/logo192.png`}
         alt="React Logo"
         style={{ height: "auto", width: "100px" }}
       />

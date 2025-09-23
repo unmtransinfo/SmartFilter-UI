@@ -28,7 +28,7 @@ const AnalyzePage: React.FC = () => {
     try {
       const RDKitModule = await initRDKitModule({
         locateFile: (file: string) =>
-          `${process.env.PUBLIC_URL}/${file}`, // resolves to /smartsfilter/RDKit_minimal.wasm
+          `${import.meta.env.PUBLIC_URL}/${file}`, // resolves to /smartsfilter/RDKit_minimal.wasm
       });
       setRDKit(RDKitModule);
       console.log("RDKit.js initialized in App");

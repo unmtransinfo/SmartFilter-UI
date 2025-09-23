@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MatchResult } from "../HomePage";
+import type { MatchResult } from "../HomePage";
 import MolImage from "./MolImage";
 
 const exportToCSV = (data: MatchResult[]) => {

@@ -150,7 +150,7 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
           </div>
         </div>
         <div className="col-md-6 text-center">
-          <img src={import.meta.env.PUBLIC_URL + "/filter.png"} alt="logo" width={60} />
+          <img src="/filter.png" alt="logo" width={60} />
           <span className="fs-4 fw-bold logo-title">SmartFilter</span>
         </div>
         <div className="col-md-3 text-end">

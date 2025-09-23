@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SmartFilterLayout from "./components/SmartFilterLayout";
 import SmartsFilterResult from "./components/SmartsFilterResult";
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MolImage from "./MolImage";
-import initRDKitModule from "@rdkit/rdkit";
 
 interface MatchDetail {
   name: string;
@@ -23,23 +22,25 @@ const AnalyzePage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
 
+  // Load RDKit from unpkg
   useEffect(() => {
-  const loadRDKit = async () => {
-    try {
-      const RDKitModule = await initRDKitModule({
-        locateFile: (file: string) =>
-          `${import.meta.env.PUBLIC_URL}/${file}`, // resolves to /smartsfilter/RDKit_minimal.wasm
-      });
-      setRDKit(RDKitModule);
-      console.log("RDKit.js initialized in App");
-    } catch (err) {
-      console.error("RDKit.js init failed", err);
-    }
-  };
-  loadRDKit();
-}, []);
+    const loadRDKit = async () => {
+      if ((window as any).RDKit) {
+        try {
+          const RDKitModule = await (window as any).RDKit();
+          setRDKit(RDKitModule);
+          console.log("RDKit.js initialized!");
+        } catch (err) {
+          console.error("RDKit.js init failed", err);
+        }
+      } else {
+        console.error("RDKit.js not loaded. Did you include the unpkg script?");
+      }
+    };
+    loadRDKit();
+  }, []);
 
-
+  // Read state from sessionStorage
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const key = searchParams.get("key");
@@ -123,7 +124,11 @@ const AnalyzePage: React.FC = () => {
       <div className="d-flex justify-content-between align-items-center mt-4">
         <label>
           Show entries:&nbsp;
-          <select value={entriesPerPage} onChange={handleEntriesChange} className="form-select d-inline w-auto">
+          <select
+            value={entriesPerPage}
+            onChange={handleEntriesChange}
+            className="form-select d-inline w-auto"
+          >
             <option value={10}>10</option>
             <option value={20}>20</option>
           </select>
@@ -144,7 +149,10 @@ const AnalyzePage: React.FC = () => {
           </thead>
           <tbody>
             {currentResults.map((s, i) => (
-              <tr key={i} className={s.matched ? "table-danger" : "table-success"}>
+              <tr
+                key={i}
+                className={s.matched ? "table-danger" : "table-success"}
+              >
                 <td>{startIndex + i + 1}</td>
                 <td>{s.matched ? "Fail" : "Pass"}</td>
                 <td>{s.Smart}</td>
@@ -156,10 +164,18 @@ const AnalyzePage: React.FC = () => {
 
       {totalPages > 1 && (
         <div className="d-flex justify-content-between align-items-center">
-          <button className="btn btn-outline-primary" onClick={handlePrev} disabled={currentPage === 1}>
+          <button
+            className="btn btn-outline-primary"
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+          >
             Previous
           </button>
-          <button className="btn btn-outline-primary" onClick={handleNext} disabled={currentPage === totalPages}>
+          <button
+            className="btn btn-outline-primary"
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+          >
             Next
           </button>
         </div>

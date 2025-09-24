@@ -79,7 +79,7 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
   };
   const fetchDemoSmiles = async (): Promise<{ smiles: string; name: string }[]> => {
     try {
-      const response = await fetch(`${import.meta.env.PUBLIC_URL}/data/demo.smi`);
+      const response = await fetch("/data/demo.smi");
       const text = await response.text();
       const lines = text.split("\n").filter((line) => line.trim() !== "");
       return lines.map((line) => {

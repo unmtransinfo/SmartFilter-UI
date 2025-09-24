@@ -19,18 +19,25 @@ const MolImage: React.FC<MolImageProps> = ({
   const [RDKit, setRDKit] = useState<any>(null);
   const [svgData, setSvgData] = useState<string>("");
 
-  // Load RDKit from window (unpkg)
+  // Load RDKit.js via initRDKitModule
   useEffect(() => {
-    const waitRDKit = async () => {
-      if ((window as any).RDKit) {
-        const RDKitModule = await (window as any).RDKit();
+    const loadRDKit = async () => {
+      const baseUrl =
+        "https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist";
+
+      try {
+        const RDKitModule = await (window as any).initRDKitModule({
+          locateFile: (file: string) => `${baseUrl}/${file}`,
+        });
+
+        console.log("✅ RDKit ready:", RDKitModule.version());
         setRDKit(RDKitModule);
-        console.log("RDKit.js initialized!");
-      } else {
-        console.error("RDKit.js not loaded. Did you include the unpkg script?");
+      } catch (err) {
+        console.error("❌ RDKit init failed:", err);
       }
     };
-    waitRDKit();
+
+    loadRDKit();
   }, []);
 
   useEffect(() => {

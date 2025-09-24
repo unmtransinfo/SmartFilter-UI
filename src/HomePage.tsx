@@ -186,12 +186,14 @@ const handleSubmit = async (inputData: any) => {
 
     // BLAKE Filter API call with expert params
     if (runmode === "filter" && blakeIsChecked) {
-      const smartsText = await fetch("/data/ursu_pains.sma").then(r => {
-        if (!r.ok) {
-          addError("Error"+r.status+r.text())
-        }
-        return r.text();
-      });
+        const smartsText = await fetch(
+          `${import.meta.env.BASE_URL}data/ursu_pains.sma`
+        ).then(async (r) => {
+          if (!r.ok) {
+            addError("Error " + r.status + " " + (await r.text()));
+          }
+          return r.text();
+        });
       
       const smartsPatterns = smartsText
         .split(/\r?\n/)
@@ -357,34 +359,34 @@ const handleSubmit = async (inputData: any) => {
         includePasses={includePasses}
         includeFails={includeFails}
       />
-     <footer
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "10px",
-        padding: "10px",
-        backgroundColor: "#f0f0f0",
-      }}
-    >
-      <img
-        src="/logo.png"
-        alt="RDKit Logo"
-        style={{ height: "auto", width: "100px" }}
-      />
-      <img
-        src="/logo192.png"
-        alt="React Logo"
-        style={{ height: "auto", width: "100px" }}
-      />
-      <img
-        src="/University_of_New_Mexico_logo.svg"
-        alt="UNM Logo"
-        style={{ height: "auto", width: "200px" }}
-      />
+      <footer
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px",
+          padding: "10px",
+          backgroundColor: "#f0f0f0",
+        }}
+      >
+        <img
+          src={`${import.meta.env.BASE_URL}logo.png`}
+          alt="RDKit Logo"
+          style={{ height: "auto", width: "100px" }}
+        />
+        <img
+          src={`${import.meta.env.BASE_URL}logo192.png`}
+          alt="React Logo"
+          style={{ height: "auto", width: "100px" }}
+        />
+        <img
+          src={`${import.meta.env.BASE_URL}University_of_New_Mexico_logo.svg`}
+          alt="UNM Logo"
+          style={{ height: "auto", width: "200px" }}
+        />
+      </footer>
 
-    </footer>
     </SmartFilterLayout>
     
   );

@@ -25,18 +25,21 @@ const AnalyzePage: React.FC = () => {
   // Load RDKit from unpkg
   useEffect(() => {
     const loadRDKit = async () => {
-      if ((window as any).RDKit) {
-        try {
-          const RDKitModule = await (window as any).RDKit();
-          setRDKit(RDKitModule);
-          console.log("RDKit.js initialized!");
-        } catch (err) {
-          console.error("RDKit.js init failed", err);
-        }
-      } else {
-        console.error("RDKit.js not loaded. Did you include the unpkg script?");
+      const baseUrl =
+        "https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist";
+
+      try {
+        const RDKitModule = await (window as any).initRDKitModule({
+          locateFile: (file: string) => `${baseUrl}/${file}`,
+        });
+
+        console.log("✅ RDKit ready:", RDKitModule.version());
+        setRDKit(RDKitModule);
+      } catch (err) {
+        console.error("❌ RDKit init failed:", err);
       }
     };
+
     loadRDKit();
   }, []);
 

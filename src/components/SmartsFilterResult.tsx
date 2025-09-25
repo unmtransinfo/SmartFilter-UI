@@ -127,7 +127,7 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
       .toString(36)
       .substr(2, 9)}`;
     sessionStorage.setItem(key, JSON.stringify(result));
-    const url = `/analyze?key=${key}`;
+    const url = `smartsfilter/analyze?key=${key}`;
     window.open(url, "_blank");
   };
 

@@ -25,8 +25,22 @@ const AnalyzePage: React.FC = () => {
   // Load RDKit from unpkg
   useEffect(() => {
     const loadRDKit = async () => {
-      const baseUrl =
-        "https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist";
+      // First ensure the RDKit script is loaded
+      if (!(window as any).initRDKitModule) {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist/RDKit_minimal.js';
+        script.async = true;
+        
+        const loadPromise = new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+        });
+        
+        document.head.appendChild(script);
+        await loadPromise;
+      }
+
+      const baseUrl = "https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist";
 
       try {
         const RDKitModule = await (window as any).initRDKitModule({

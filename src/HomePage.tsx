@@ -187,7 +187,7 @@ const handleSubmit = async (inputData: any) => {
     // BLAKE Filter API call with expert params
     if (runmode === "filter" && blakeIsChecked) {
         const smartsText = await fetch(
-          `${import.meta.env.BASE_URL}data/ursu_pains.sma`
+          `${import.meta.env.BASE_URL}/data/ursu_pains.sma`
         ).then(async (r) => {
           if (!r.ok) {
             addError("Error " + r.status + " " + (await r.text()));

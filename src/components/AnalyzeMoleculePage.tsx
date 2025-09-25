@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MolImage from "./MolImage";
-import initRDKitModule from "@rdkit/rdkit";
 
 interface MatchDetail {
   name: string;
@@ -13,7 +12,7 @@ interface MatchDetail {
 const AnalyzePage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [RDKit, setRDKit] = useState<any>(null);
+  const [setRDKit] = useState<any>(null);
   const [results, setResults] = useState<MatchDetail[]>([]);
   const [molName, setMolName] = useState<string>("");
   const [molSmiles, setMolSmiles] = useState<string>("");
@@ -23,23 +22,42 @@ const AnalyzePage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
 
+  // Load RDKit from unpkg
   useEffect(() => {
-  const loadRDKit = async () => {
-    try {
-      const RDKitModule = await initRDKitModule({
-        locateFile: (file: string) =>
-          `${process.env.PUBLIC_URL}/${file}`, // resolves to /smartsfilter/RDKit_minimal.wasm
-      });
-      setRDKit(RDKitModule);
-      console.log("RDKit.js initialized in App");
-    } catch (err) {
-      console.error("RDKit.js init failed", err);
-    }
-  };
-  loadRDKit();
-}, []);
+    const loadRDKit = async () => {
+      // First ensure the RDKit script is loaded
+      if (!(window as any).initRDKitModule) {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist/RDKit_minimal.js';
+        script.async = true;
+        
+        const loadPromise = new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+        });
+        
+        document.head.appendChild(script);
+        await loadPromise;
+      }
 
+      const baseUrl = "https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist";
 
+      try {
+        const RDKitModule = await (window as any).initRDKitModule({
+          locateFile: (file: string) => `${baseUrl}/${file}`,
+        });
+
+        console.log("✅ RDKit ready:", RDKitModule.version());
+        setRDKit(RDKitModule);
+      } catch (err) {
+        console.error("❌ RDKit init failed:", err);
+      }
+    };
+
+    loadRDKit();
+  }, []);
+
+  // Read state from sessionStorage
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const key = searchParams.get("key");
@@ -123,7 +141,11 @@ const AnalyzePage: React.FC = () => {
       <div className="d-flex justify-content-between align-items-center mt-4">
         <label>
           Show entries:&nbsp;
-          <select value={entriesPerPage} onChange={handleEntriesChange} className="form-select d-inline w-auto">
+          <select
+            value={entriesPerPage}
+            onChange={handleEntriesChange}
+            className="form-select d-inline w-auto"
+          >
             <option value={10}>10</option>
             <option value={20}>20</option>
           </select>
@@ -144,7 +166,10 @@ const AnalyzePage: React.FC = () => {
           </thead>
           <tbody>
             {currentResults.map((s, i) => (
-              <tr key={i} className={s.matched ? "table-danger" : "table-success"}>
+              <tr
+                key={i}
+                className={s.matched ? "table-danger" : "table-success"}
+              >
                 <td>{startIndex + i + 1}</td>
                 <td>{s.matched ? "Fail" : "Pass"}</td>
                 <td>{s.Smart}</td>
@@ -156,10 +181,18 @@ const AnalyzePage: React.FC = () => {
 
       {totalPages > 1 && (
         <div className="d-flex justify-content-between align-items-center">
-          <button className="btn btn-outline-primary" onClick={handlePrev} disabled={currentPage === 1}>
+          <button
+            className="btn btn-outline-primary"
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+          >
             Previous
           </button>
-          <button className="btn btn-outline-primary" onClick={handleNext} disabled={currentPage === totalPages}>
+          <button
+            className="btn btn-outline-primary"
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+          >
             Next
           </button>
         </div>

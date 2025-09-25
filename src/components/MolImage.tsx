@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import initRDKitModule from "@rdkit/rdkit";
 
 type MolImageProps = {
   smiles: string;
@@ -20,70 +19,60 @@ const MolImage: React.FC<MolImageProps> = ({
   const [RDKit, setRDKit] = useState<any>(null);
   const [svgData, setSvgData] = useState<string>("");
 
+  // Load RDKit.js via initRDKitModule
   useEffect(() => {
-  const loadRDKit = async () => {
-    try {
-      const RDKitModule = await initRDKitModule({
-        locateFile: (file: string) =>
-          `${process.env.PUBLIC_URL}/${file}`, // resolves to /smartsfilter/RDKit_minimal.wasm
-      });
-      setRDKit(RDKitModule);
-      console.log("RDKit.js initialized in App");
-    } catch (err) {
-      console.error("RDKit.js init failed", err);
-    }
-  };
-  loadRDKit();
-}, []);
+    const loadRDKit = async () => {
+      const baseUrl =
+        "https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist";
 
+      try {
+        const RDKitModule = await (window as any).initRDKitModule({
+          locateFile: (file: string) => `${baseUrl}/${file}`,
+        });
 
-useEffect(() => {
-  if (
-    !RDKit ||
-    typeof smiles !== "string" || 
-    smiles.trim() === ""
-  ) {
-    setSvgData(""); // Clear any old SVG if smiles invalid
-    return;
-  }
-
-  try {
-    const mol = RDKit.get_mol(smiles);
-    
-    if (!mol) throw new Error("RDKit failed to parse molecule");
-    if (format === "png" && canvasRef.current) {
-      const options: any = {};
-      if (highlightAtoms && highlightAtoms.length > 0) {
-        options.highlightAtoms = highlightAtoms;
+        console.log("✅ RDKit ready:", RDKitModule.version());
+        setRDKit(RDKitModule);
+      } catch (err) {
+        console.error("❌ RDKit init failed:", err);
       }
-      mol.draw_to_canvas(canvasRef.current, options);
-      setSvgData(""); // Clear SVG if using canvas
-    } else if (format === "svg") {
-      let svg = "";
-    if (highlightAtoms && highlightAtoms.length > 0) {
-    console.log(highlightAtoms)
-    svg = mol.get_svg_with_highlights(  JSON.stringify({
-    atoms: highlightAtoms,
-  }));
-    
-    } else {
-        
-    svg = mol.get_svg();
+    };
+
+    loadRDKit();
+  }, []);
+
+  useEffect(() => {
+    if (!RDKit || !smiles?.trim()) {
+      setSvgData("");
+      return;
     }
 
+    try {
+      const mol = RDKit.get_mol(smiles);
+      if (!mol) throw new Error("Failed to parse molecule");
 
-      setSvgData(svg);
+      if (format === "png" && canvasRef.current) {
+        const options: any = {};
+        if (highlightAtoms.length > 0) options.highlightAtoms = highlightAtoms;
+        mol.draw_to_canvas(canvasRef.current, options);
+        setSvgData("");
+      } else {
+        let svg = "";
+        if (highlightAtoms.length > 0) {
+          svg = mol.get_svg_with_highlights(
+            JSON.stringify({ atoms: highlightAtoms })
+          );
+        } else {
+          svg = mol.get_svg();
+        }
+        setSvgData(svg);
+      }
+
+      mol.delete();
+    } catch (err) {
+      console.warn("MolImage rendering failed for SMILES:", smiles, err);
+      setSvgData(`<text x="10" y="50" fill="red">⚠️ Invalid SMILES</text>`);
     }
-
-    mol.delete();
-  } catch (err) {
-    
-    console.warn("MolImage rendering failed for SMILES:", smiles, err);
-    setSvgData(`<text x="10" y="50" fill="red">⚠️ Invalid SMILES</text>`);
-  }
-}, [RDKit, smiles, format, highlightAtoms]);
-
-
+  }, [RDKit, smiles, format, highlightAtoms]);
 
   if (!smiles) return <p>No SMILES provided</p>;
 

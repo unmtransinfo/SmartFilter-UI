@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SmartFilterLayout from "./components/SmartFilterLayout";
 import SmartsFilterResult from "./components/SmartsFilterResult";
-import initRDKitModule from "@rdkit/rdkit";
 
 export type MatchResult = {
   name: string;
@@ -45,36 +44,27 @@ function HomePage() {
   setErrorMessage((prev) => [...prev, msg]);
 };
 
+  useEffect(() => {
+    const loadRDKit = async () => {
+      const baseUrl =
+        "https://unpkg.com/@rdkit/rdkit@2025.3.2-1.0.0/dist";
 
-  const safeFetch = async (url: string) => {
-    const res = await fetch(url);
-    if (!res.ok) {
-      addError("Error "+res.status+res.statusText);
-      return null;
-    }
-    return res.json();
-  };
-  useEffect(() => {
-    const handler = (e: PromiseRejectionEvent) => {
-      setErrorMessage(e.reason?.message || "Unexpected error.");
+      try {
+        const RDKitModule = await (window as any).initRDKitModule({
+          locateFile: (file: string) => `${baseUrl}/${file}`,
+        });
+
+        console.log("✅ RDKit ready:", RDKitModule.version());
+        setRDKit(RDKitModule);
+      } catch (err) {
+        console.error("❌ RDKit init failed:", err);
+      }
     };
-    window.addEventListener("unhandledrejection", handler);
-    return () => window.removeEventListener("unhandledrejection", handler);
+
+    loadRDKit();
   }, []);
-  useEffect(() => {
-  const loadRDKit = async () => {
-    try {
-      const RDKitModule = await initRDKitModule({
-        locateFile: (file: string) => `${process.env.PUBLIC_URL}/${file}`,
-      });
-      setRDKit(RDKitModule);
-      console.log("RDKit.js initialized in App");
-    } catch (err) {
-      console.error("RDKit.js init failed", err);
-    }
-  };
-  loadRDKit();
-}, []);
+
+
 
 
   const readFileContent = (file: File): Promise<string> =>
@@ -196,12 +186,14 @@ const handleSubmit = async (inputData: any) => {
 
     // BLAKE Filter API call with expert params
     if (runmode === "filter" && blakeIsChecked) {
-      const smartsText = await fetch(`${process.env.PUBLIC_URL}/data/ursu_pains.sma`).then(r => {
-        if (!r.ok) {
-          addError("Error"+r.status+r.text())
-        }
-        return r.text();
-      });
+        const smartsText = await fetch(
+          `${import.meta.env.BASE_URL}/data/ursu_pains.sma`
+        ).then(async (r) => {
+          if (!r.ok) {
+            addError("Error " + r.status + " " + (await r.text()));
+          }
+          return r.text();
+        });
       
       const smartsPatterns = smartsText
         .split(/\r?\n/)
@@ -367,34 +359,34 @@ const handleSubmit = async (inputData: any) => {
         includePasses={includePasses}
         includeFails={includeFails}
       />
-     <footer
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "10px",
-        padding: "10px",
-        backgroundColor: "#f0f0f0",
-      }}
-    >
-      <img
-        src={`${process.env.PUBLIC_URL}/logo.png`}
-        alt="RDKit Logo"
-        style={{ height: "auto", width: "100px" }}
-      />
-      <img
-        src={`${process.env.PUBLIC_URL}/logo192.png`}
-        alt="React Logo"
-        style={{ height: "auto", width: "100px" }}
-      />
-      <img
-        src="https://chiltepin.health.unm.edu/smartsfilter/University_of_New_Mexico_logo.svg"
-        alt="UNM Logo"
-        style={{ height: "auto", width: "200px" }}
-      />
+      <footer
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px",
+          padding: "10px",
+          backgroundColor: "#f0f0f0",
+        }}
+      >
+        <img
+          src={`${import.meta.env.BASE_URL}logo.png`}
+          alt="RDKit Logo"
+          style={{ height: "auto", width: "100px" }}
+        />
+        <img
+          src={`${import.meta.env.BASE_URL}logo192.png`}
+          alt="React Logo"
+          style={{ height: "auto", width: "100px" }}
+        />
+        <img
+          src={`${import.meta.env.BASE_URL}University_of_New_Mexico_logo.svg`}
+          alt="UNM Logo"
+          style={{ height: "auto", width: "200px" }}
+        />
+      </footer>
 
-    </footer>
     </SmartFilterLayout>
     
   );

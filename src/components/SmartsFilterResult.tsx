@@ -127,7 +127,11 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
       .toString(36)
       .substr(2, 9)}`;
     sessionStorage.setItem(key, JSON.stringify(result));
-    const url = `/smartsfilter/analyze?key=${key}`;
+    
+    // Use current origin and build the HashRouter URL
+    const baseUrl = window.location.origin;
+    const basePath = import.meta.env.BASE_URL || '/';
+    const url = `${baseUrl}${basePath}#/analyze?key=${key}`;
     window.open(url, "_blank");
   };
 

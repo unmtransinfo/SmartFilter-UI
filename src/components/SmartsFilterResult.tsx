@@ -126,10 +126,19 @@ const SmartsFilterResult: React.FC<SmartsFilterResultProps> = ({
     const key = `analyze_data_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`;
+
+    // Save the result in sessionStorage
     sessionStorage.setItem(key, JSON.stringify(result));
-    const url = `smartsfilter/analyze?key=${key}`;
-    window.open(url, "_blank");
+
+    // Open a new tab without exposing key in the URL
+    const newWindow = window.open("/smartsfilter/analyze", "_blank");
+
+    // Store the key in the new window's name
+    if (newWindow) {
+      newWindow.name = key;
+    }
   };
+
 
   if (matchCounts.length === 0) return null;
 

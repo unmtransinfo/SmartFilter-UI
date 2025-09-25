@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import MolImage from "./MolImage";
 
 interface MatchDetail {
@@ -10,7 +10,6 @@ interface MatchDetail {
 }
 
 const AnalyzePage: React.FC = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const [setRDKit] = useState<any>(null);
   const [results, setResults] = useState<MatchDetail[]>([]);
@@ -40,11 +39,9 @@ const AnalyzePage: React.FC = () => {
     loadRDKit();
   }, []);
 
-  // Read state from sessionStorage
+  // Read state from sessionStorage using window.name instead of query param
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const key = searchParams.get("key");
-
+    const key = window.name; // 👈 comes from SmartsFilterResult
     if (!key) {
       navigate("/");
       return;
@@ -88,7 +85,7 @@ const AnalyzePage: React.FC = () => {
       console.error("Failed to parse analyze data from sessionStorage", e);
       navigate("/");
     }
-  }, [location.search, navigate]);
+  }, [navigate]);
 
   const totalSmarts = results.length;
   const totalMatches = results.filter((r) => r.matched).length;
@@ -108,7 +105,7 @@ const AnalyzePage: React.FC = () => {
 
   const handleEntriesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setEntriesPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page on change
+    setCurrentPage(1);
   };
 
   return (

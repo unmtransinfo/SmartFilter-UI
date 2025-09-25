@@ -8,7 +8,7 @@ function App() {
     <Router basename="/smartsfilter">
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/smartsfilter/analyze" element={<AnalyzePage />} />
+        <Route path="/analyze" element={<AnalyzePage />} />
       </Routes>
     </Router>
   );

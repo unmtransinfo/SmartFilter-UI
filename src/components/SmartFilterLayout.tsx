@@ -155,7 +155,13 @@ const SmartFilterLayout: React.FC<SmartFilterLayoutProps> = ({
           <span className="fs-4 fw-bold logo-title">SmartFilter</span>
         </div>
         <div className="col-md-3 text-end">
-          <button className="btn btn-outline-secondary btn-sm mx-1">Help</button>
+          <button
+            className="btn btn-outline-secondary btn-sm mx-1"
+            onClick={() => window.open(`${import.meta.env.BASE_URL}about.html`, "_blank")}
+          >
+            Help
+          </button>
+
           <button className="btn btn-outline-info btn-sm mx-1" onClick={handleDemoClick}>
             Demo
           </button>

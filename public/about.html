@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - SmartFilter UI</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 2rem; color: #222; }
+    h1, h2, h3 { color: #004080; }
+    ul { margin-left: 1.5rem; }
+    code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+    a { color: #004080; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>SmartFilter Help</h1>
+  <p>
+    SmartFilter-UI is a modern web application for molecular filtering and analysis using <b>SMARTS patterns</b>.
+    It enables filtering of compound libraries against well-known substructure filters and visualization of matched
+    substructures directly in the browser.
+  </p>
+
+  <h2>Modes of Operation</h2>
+  <ul>
+    <li><b>Filter Mode</b> – Filter a set of molecules against selected filters. Inspect failed compounds and their matching patterns.</li>
+    <li><b>Analyze One Molecule Mode</b> – Test a single molecule against all filters. View all matches and highlighted atoms interactively.</li>
+  </ul>
+
+  <h2>Supported SMARTS Sets</h2>
+  <ul>
+    <li><b>Blake</b> – From James Blake (Array Biopharma). Originally published in SLN format and translated to SMARTS.</li>
+    <li><b>Glaxo</b> – Includes unsuitable leads, unsuitable natural products, and reactive subsets. Optional subsets include electrophilic, nucleophilic, acids, and bases.</li>
+    <li><b>ALARM NMR</b> – Derived from Abbott’s method for detecting reactive false positives.</li>
+    <li><b>Oprea</b> – General multi-objective library fitness filters by Tudor Oprea.</li>
+    <li><b>Toxicity</b> – Developed by Oleg Ursu, based on toxicophores from published sources.</li>
+    <li><b>MLSMR</b> – NIH Roadmap screening filters (original and relaxed MLSCN versions).</li>
+    <li><b>PAINS</b> – Pan-Assay Interference Compounds (Baell & Holloway, 2010), translated into SMARTS.</li>
+  </ul>
+
+  <p><b>Note on Standardization:</b><br>
+  SMARTS or any substructure filtering depends on valence standardization. For example:</p>
+  <ul>
+    <li>Nitro groups should be represented as <code>-N(=O)=O</code> (not charge-separated).</li>
+    <li>Carboxylic acids should be protonated <code>-C(=O)[OH]</code> (not deprotonated).</li>
+  </ul>
+  <p>The app applies <b>basic valence normalization</b> before matching to accommodate non-standardized input.</p>
+
+  <h2>Web App Features</h2>
+  <ul>
+    <li><b>Show Matches</b> – Display all SMARTS patterns matched for each molecule.</li>
+    <li><b>Include Passes / Fails</b> – Control whether successful or failed molecules appear in the output.</li>
+    <li><b>Normalize Molecules</b> – Optionally normalize nitro groups, carboxylic acids, etc., via SMIRKS rules.</li>
+    <li><b>Strict Mode</b> – Enforce strict SMARTS parsing (errors fail instead of being ignored).</li>
+    <li><b>Batch Processing</b> – Supports thousands of molecules (default max: 5000; view limit: 100).</li>
+    <li><b>Visualization</b> – Molecules rendered with <b>RDKit.js</b>, with substructures highlighted inline.</li>
+  </ul>
+
+  <h2>Technology</h2>
+  <ul>
+    <li><b>Frontend:</b> React + TypeScript + Vite</li>
+    <li><b>Cheminformatics:</b> RDKit.js (WASM build of RDKit)</li>
+    <li><b>Styling:</b> TailwindCSS + ShadCN/UI</li>
+    <li><b>Deployment:</b> Docker + Nginx frontend, SmartFilter API backend</li>
+  </ul>
+  <p>Unlike earlier versions (which used <b>ChemAxon JChem</b>), this UI relies entirely on <b>open-source RDKit.js</b> for substructure search, rendering, and normalization.</p>
+
+  <h2>References</h2>
+  <ol>
+    <li>Hahn M, et al. Strategic Pooling of Compounds for High-Throughput Screening. <i>J. Chem. Inf. Comput. Sci.</i> 1999, 39, 897–902.</li>
+    <li>Huth JR, et al. ALARM NMR: A Rapid and Robust Experimental Method To Detect Reactive False Positives in Biochemical Screens. <i>J. Am. Chem. Soc.</i> 2005, 127, 217–224.</li>
+    <li>Klaassen CD (ed.). Casarett & Doull’s Toxicology, 6th ed., McGraw-Hill, 2001.</li>
+    <li>Kazius J, McGuire R, Bursi R. Derivation and Validation of Toxicophores for Mutagenicity Prediction. <i>J. Med. Chem.</i> 2005, 48, 312–320.</li>
+    <li>Baell JB, Holloway GA. New Substructure Filters for Removal of PAINS from Screening Libraries. <i>J. Med. Chem.</i> 2010, 53(7), 2719–2740.</li>
+    <li>Ekins S, et al. Analysis and hit filtering of a very large library of compounds screened against Mycobacterium tuberculosis. <i>Mol. BioSyst.</i> 2010, 6, 2316–2324.</li>
+  </ol>
+
+  <h2>Acknowledgments</h2>
+  <ul>
+    <li><b>Author:</b> Jeremy Yang</li>
+    <li><b>Developer:</b> Bivek Sharma Panthi</li>
+    <li><b>Support:</b> Jack Ringer</li>
+    <li>Thanks to the <b>RDKit community</b> for open-source cheminformatics tools</li>
+  </ul>
+</body>
+</html>

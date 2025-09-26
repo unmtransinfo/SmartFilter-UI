@@ -36,7 +36,7 @@ Built with **React + TypeScript + Vite** and powered by **RDKit.js**, SmartFilte
 
 👉 Visit the live app here: [SmartFilter-UI Deployment](https://chiltepin.health.unm.edu/smartsfilter/)  
 
-👉 API Reference: [SmartFilter API](https://chiltepin.health.unm.edu/smartsfilter/apidocs/)  
+👉 API Reference: [SmartFilter API](https://github.com/unmtransinfo/SmartFilter-API)  
 
 ---
 
@@ -61,7 +61,7 @@ npm install
 npm run dev
 ```
 
-App runs at: [http://localhost:5173/](http://localhost:5173/)  
+App runs at: [http://localhost:5173/smartsfilter](http://localhost:5173/smartsfilter)  
 
 ---
 
@@ -74,32 +74,12 @@ docker build -t smartfilter-ui .
 docker run -p 5173:5173 smartfilter-ui
 ```
 
-For production with **Nginx + SmartFilter API**, use the provided `docker-compose-production.yml`.
-
----
-
-## 🌐 Deployment
-
-The app is deployed at:  
-👉 [SmartFilter-UI](https://chiltepin.health.unm.edu/smartsfilter/)  
-
-API reference:  
-👉 [SmartFilter API Docs](https://chiltepin.health.unm.edu/smartsfilter/apidocs/)  
-
----
-
-## 📚 References
-
-- Baell JB, Holloway GA. *New Substructure Filters for Removal of Pan Assay Interference Compounds (PAINS) from Screening Libraries and for their Exclusion in Bioassays.* J. Med. Chem. 2010, 53(7), 2719–2740.  
-- Huth JR, et al. *ALARM NMR: A Rapid and Robust Experimental Method To Detect Reactive False Positives in Biochemical Screens.* J. Am. Chem. Soc., 2005, 127, 217–224.  
-- Ekins S, et al. *Analysis and hit filtering of a very large library of compounds screened against Mycobacterium tuberculosis.* Mol. BioSyst., 2010, 6, 2316–2324.  
-
 ---
 
 ## 🙌 Acknowledgments
 
-- **Author:** Jeremy Yang  
-- **Lead Developer:** Bivek Sharma Panthi  
+- **Supervision:** Jeremy Yang  
+- **Developer:** Bivek Sharma Panthi  
 - **Supporter:** Jack Ringer  
 - Some UI ideas adapted from **Badapple2-UI**.  
 - Thanks to **RDKit.js** for cheminformatics functionality.  

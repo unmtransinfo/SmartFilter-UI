@@ -1,73 +1,115 @@
-# React + TypeScript + Vite
+# SmartFilter-UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SmartFilter-UI is a modern web interface for molecular filtering and analysis using SMARTS patterns.  
+It provides researchers, chemoinformaticians, and developers with an interactive way to test compounds against well-established substructure filters such as **PAINS, Blake, Glaxo, ALARM NMR, Oprea, Toxicity, and MLSMR**.
 
-Currently, two official plugins are available:
+Built with **React + TypeScript + Vite** and powered by **RDKit.js**, SmartFilter-UI integrates seamlessly with the **SmartFilter API**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🚀 Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Filter Mode** – Test a set of molecules against selected filters and inspect failed matches.  
+- **Analyze One Molecule Mode** – Evaluate a single molecule against all filters with detailed matches.  
+- **Supported SMARTS Sets:**
+  - **PAINS** – Pan-Assay Interference Compounds (Baell & Holloway, 2010).  
+  - **Blake** – From Array Biopharma (translated from SLN to SMARTS).  
+  - **Glaxo** – Includes unsuitable leads, natural products, reactive subsets, acids/bases, electrophilic, and nucleophilic subsets.  
+  - **ALARM NMR** – Abbott method for detecting reactive false positives.  
+  - **Oprea** – Multi-objective library fitness filters.  
+  - **Toxicity** – Based on published toxicophores.  
+  - **MLSMR** – NIH Roadmap screening filters.  
+- **Expert Mode Options** – Configure output with “Show Matches,” “Include Passes,” “Include Fails,” “Strict Mode,” etc.  
+- **Batch Processing** – Upload SMILES files and process thousands of molecules.  
+- **Visualization** – Molecules rendered via **RDKit.js** with highlighted substructure matches.  
+- **Modern UI** – Built with **Vite, React, TailwindCSS**, and **Docker-ready**.  
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🧪 Example
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+👉 Visit the live app here: [SmartFilter-UI Deployment](https://chiltepin.health.unm.edu/smartsfilter/)  
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+👉 API Reference: [SmartFilter API](https://chiltepin.health.unm.edu/smartsfilter/apidocs/)  
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React + TypeScript + Vite  
+- **Cheminformatics:** RDKit.js  
+- **Styling:** TailwindCSS, ShadCN/UI  
+- **Deployment:** Docker + Nginx (frontend), Apache (server proxy)  
+- **API:** SmartFilter API  
+
+---
+
+## 📦 Installation & Development
+
+Clone and run locally:
+
+```bash
+git clone https://github.com/unmtransinfo/SmartFilter-UI.git
+cd SmartFilter-UI
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+App runs at: [http://localhost:5173/](http://localhost:5173/)  
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🐳 Docker Setup
+
+Build and run with Docker:
+
+```bash
+docker build -t smartfilter-ui .
+docker run -p 5173:5173 smartfilter-ui
 ```
+
+For production with **Nginx + SmartFilter API**, use the provided `docker-compose-production.yml`.
+
+---
+
+## 🌐 Deployment
+
+The app is deployed at:  
+👉 [SmartFilter-UI](https://chiltepin.health.unm.edu/smartsfilter/)  
+
+API reference:  
+👉 [SmartFilter API Docs](https://chiltepin.health.unm.edu/smartsfilter/apidocs/)  
+
+---
+
+## 📚 References
+
+- Baell JB, Holloway GA. *New Substructure Filters for Removal of Pan Assay Interference Compounds (PAINS) from Screening Libraries and for their Exclusion in Bioassays.* J. Med. Chem. 2010, 53(7), 2719–2740.  
+- Huth JR, et al. *ALARM NMR: A Rapid and Robust Experimental Method To Detect Reactive False Positives in Biochemical Screens.* J. Am. Chem. Soc., 2005, 127, 217–224.  
+- Ekins S, et al. *Analysis and hit filtering of a very large library of compounds screened against Mycobacterium tuberculosis.* Mol. BioSyst., 2010, 6, 2316–2324.  
+
+---
+
+## 🙌 Acknowledgments
+
+- **Author:** Jeremy Yang  
+- **Lead Developer:** Bivek Sharma Panthi  
+- **Supporter:** Jack Ringer  
+- Some UI ideas adapted from **Badapple2-UI**.  
+- Thanks to **RDKit.js** for cheminformatics functionality.  
+
+---
+
+## 📄 License
+
+This project is licensed under the **BSD-3-Clause License**.
+
+---
+
+## 👥 Audience
+
+This project is intended for:
+
+- **Researchers** – to filter out problematic compounds in screening libraries.  
+- **Developers** – to integrate filtering pipelines into cheminformatics workflows.  
+- **Students & Educators** – as an example of cheminformatics web app development with RDKit.js.  

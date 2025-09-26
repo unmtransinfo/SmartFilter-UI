@@ -7,6 +7,13 @@ Built with **React + TypeScript + Vite** and powered by **RDKit.js**, SmartFilte
 
 ---
 
+## Screenshot
+
+![SmartFilter-UI Screenshot](/docs/images/smartfilter-ui.png)
+*(Example of the batch input mode with configuration panel)*
+
+---
+
 ## 🚀 Features
 
 - **Filter Mode** – Test a set of molecules against selected filters and inspect failed matches.  

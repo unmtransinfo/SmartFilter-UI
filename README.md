@@ -10,7 +10,6 @@ Built with **React + TypeScript + Vite** and powered by **RDKit.js**, SmartFilte
 ## Screenshot
 
 ![SmartFilter-UI Screenshot](/docs/images/smartfilter-ui.png)
-*(Example of the batch input mode with configuration panel)*
 
 ---
 

@@ -64,9 +64,6 @@ function HomePage() {
     loadRDKit();
   }, []);
 
-
-
-
   const readFileContent = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -74,6 +71,17 @@ function HomePage() {
       reader.onerror = reject;
       reader.readAsText(file);
     });
+
+  // Helper function to create POST request with JSON body
+  const createPostRequest = (url: string, payload: any) => {
+    return fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+  };
 
 const handleSubmit = async (inputData: any) => {
   if (isSubmitting) return;
@@ -130,36 +138,46 @@ const handleSubmit = async (inputData: any) => {
     });
 
     let combinedResults: MatchResult[] = [];
-    // Helper to append expert params
-    const appendExpertParams = (query: URLSearchParams) => {
+    
+    // Helper to build expert params object
+    const buildExpertParams = () => {
+      const params: any = {};
       if (typeof excludeMolProps === "boolean")
-        query.append("ExcludeMolProp", excludeMolProps ? "true" : "false");
+        params.ExcludeMolProp = excludeMolProps;
       if (typeof strictMode === "boolean")
-        query.append("strict_error", strictMode ? "true" : "false");
+        params.strict_error = strictMode;
       if (typeof uniqueAtoms === "boolean")
-        query.append("unique_set", uniqueAtoms ? "true" : "false");
+        params.unique_set = uniqueAtoms;
       if (typeof useKekule === "boolean")
-        query.append("kekuleSmiles", useKekule ? "true" : "false");
+        params.kekuleSmiles = useKekule;
       if (typeof useIsomeric === "boolean")
-        query.append("isomericSmiles", useIsomeric ? "true" : "false");
+        params.isomericSmiles = useIsomeric;
       if (typeof non_zero_row === "boolean")
-          query.append("only_rows", non_zero_row ? "true" : "false");
+        params.only_rows = non_zero_row;
+      return params;
     };
 
-    // PAINS Filter API call (only excludeMolProps)
+    // PAINS Filter API call using POST
     if (runmode === "filter" && painsIsChecked) {
-      const query = new URLSearchParams();
-      query.append("SMILES", smilesArray.join(","));
-      query.append("Smile_Names", namesArray.join(","));
-      if (inputData.config?.excludeMolProps) {
-        query.append("exclude_molprops", inputData.config.excludeMolProps ? "true" : "false");
-      }
-      const res = await fetch(`https://chiltepin.health.unm.edu/smartsfilter/api/v1/smarts_filter/get_filterpains
-?${query}`);
-      if(res.status !==200){
-        addError("Error"+res.status+res.statusText)
+      const payload = {
+        SMILES: smilesArray,
+        Smile_Names: namesArray,
+        ...(inputData.config?.excludeMolProps && {
+          ExcludeMolProp: inputData.config.excludeMolProps
+        })
+      };
+
+      const res = await createPostRequest(
+        'https://chiltepin.health.unm.edu/smartsfilter/api/v1/smarts_filter/get_filterpains',
+        payload
+      );
+      
+      if(res.status !== 200){
+        const errorText = await res.text();
+        addError(`Error ${res.status} ${res.statusText}: ${errorText}`);
         return;
       }
+      
       const json = await res.json();
       json.results.forEach((entry: any) => {
         try {
@@ -184,17 +202,17 @@ const handleSubmit = async (inputData: any) => {
       });
     }
 
-    // BLAKE Filter API call with expert params
+    // BLAKE Filter API call using POST
     if (runmode === "filter" && blakeIsChecked) {
-        const smartsText = await fetch(
-          `${import.meta.env.BASE_URL}/data/ursu_pains.sma`
-        ).then(async (r) => {
-          if (!r.ok) {
-            addError("Error " + r.status + " " + (await r.text()));
-          }
-          return r.text();
-        });
-      
+      const smartsText = await fetch(
+        `${import.meta.env.BASE_URL}/data/ursu_pains.sma`
+      ).then(async (r) => {
+        if (!r.ok) {
+          addError("Error " + r.status + " " + (await r.text()));
+        }
+        return r.text();
+      });
+    
       const smartsPatterns = smartsText
         .split(/\r?\n/)
         .filter((line) => line.trim().length > 0)
@@ -203,16 +221,24 @@ const handleSubmit = async (inputData: any) => {
           return { smarts: parts[0], name: parts[1] || "unknown" };
         });
 
-      const query = new URLSearchParams();
-      query.append("SMILES", smilesArray.join(","));
-      query.append("Smile_Names", namesArray.join(","));
-      smartsPatterns.forEach((s) => {
-        query.append("smarts", s.smarts);
-        query.append("Smart_Names", s.name);
-      });
-      appendExpertParams(query);
+      const payload = {
+        SMILES: smilesArray,
+        Smile_Names: namesArray,
+        smarts: smartsPatterns.map(s => s.smarts),
+        Smart_Names: smartsPatterns.map(s => s.name),
+        ...buildExpertParams()
+      };
 
-      const res = await fetch(`https://chiltepin.health.unm.edu/smartsfilter/api/v1/smarts_filter/get_multi_matchcounts?${query}`);
+      const res = await createPostRequest(
+        'https://chiltepin.health.unm.edu/smartsfilter/api/v1/smarts_filter/get_multi_matchcounts',
+        payload
+      );
+
+      if(res.status !== 200){
+        const errorText = await res.text();
+        addError(`Error ${res.status} ${res.statusText}: ${errorText}`);
+        return;
+      }
 
       const json = await res.json();
 
@@ -250,7 +276,7 @@ const handleSubmit = async (inputData: any) => {
       });
     }
 
-    // Expert Custom SMARTS mode
+    // Expert Custom SMARTS mode using POST
     if (isExpert && inputData.smarts?.content?.trim()) {
       let smartsRaw = "";
       if (inputData.smarts.type === "text") {
@@ -265,16 +291,25 @@ const handleSubmit = async (inputData: any) => {
         return { smarts: parts[0], name: parts[1] || "custom" };
       });
 
-      const expertQuery = new URLSearchParams();
-      expertQuery.append("SMILES", smilesArray.join(","));
-      expertQuery.append("Smile_Names", namesArray.join(","));
-      customSmartsPatterns.forEach((s) => {
-        expertQuery.append("smarts", s.smarts);
-        expertQuery.append("Smart_Names", s.name);
-      });
-      appendExpertParams(expertQuery);
+      const payload = {
+        SMILES: smilesArray,
+        Smile_Names: namesArray,
+        smarts: customSmartsPatterns.map(s => s.smarts),
+        Smart_Names: customSmartsPatterns.map(s => s.name),
+        ...buildExpertParams()
+      };
 
-      const expertRes = await fetch(`https://chiltepin.health.unm.edu/smartsfilter/api/v1/smarts_filter/get_multi_matchcounts?${expertQuery}`);
+      const expertRes = await createPostRequest(
+        'https://chiltepin.health.unm.edu/smartsfilter/api/v1/smarts_filter/get_multi_matchcounts',
+        payload
+      );
+
+      if(expertRes.status !== 200){
+        const errorText = await expertRes.text();
+        addError(`Error ${expertRes.status} ${expertRes.statusText}: ${errorText}`);
+        return;
+      }
+
       const expertJson = await expertRes.json();
       expertJson.forEach((entry: any) => {
         try {
@@ -316,7 +351,6 @@ const handleSubmit = async (inputData: any) => {
     setIsSubmitting(false);
   }
 };
-
 
   return (
     <SmartFilterLayout

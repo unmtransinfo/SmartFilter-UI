@@ -17,8 +17,7 @@
     "rdkit": "^0.5.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.1",
-    "window": "^4.2.7"
+    "react-router-dom": "^7.9.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

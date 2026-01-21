@@ -13,7 +13,7 @@ Built with **React + TypeScript + Vite** and powered by **RDKit.js**, SmartFilte
 
 ---
 
-## 🚀 Features
+## Features
 
 - **Filter Mode** – Test a set of molecules against selected filters and inspect failed matches.  
 - **Analyze One Molecule Mode** – Evaluate a single molecule against all filters with detailed matches.  
@@ -32,15 +32,15 @@ Built with **React + TypeScript + Vite** and powered by **RDKit.js**, SmartFilte
 
 ---
 
-## 🧪 Example
+## Example
 
-👉 Visit the live app here: [SmartFilter-UI Deployment](https://chiltepin.health.unm.edu/smartsfilter/)  
+Visit the live app here: [SmartFilter-UI Deployment](https://chiltepin.health.unm.edu/smartsfilter/)  
 
-👉 API Reference: [SmartFilter API](https://github.com/unmtransinfo/SmartFilter-API)  
+API Reference: [SmartFilter API](https://github.com/unmtransinfo/SmartFilter-API)  
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend:** React + TypeScript + Vite  
 - **Cheminformatics:** RDKit.js  
@@ -50,7 +50,7 @@ Built with **React + TypeScript + Vite** and powered by **RDKit.js**, SmartFilte
 
 ---
 
-## 📦 Installation & Development
+## Installation & Development
 
 Clone and run locally:
 
@@ -65,7 +65,7 @@ App runs at: [http://localhost:5173/smartsfilter](http://localhost:5173/smartsfi
 
 ---
 
-## 🐳 Docker Setup
+## Docker Setup
 
 Build and run with Docker:
 
@@ -76,7 +76,7 @@ docker run -p 5173:5173 smartfilter-ui
 
 ---
 
-## 🙌 Acknowledgments
+## Acknowledgments
 
 - **Supervision:** Jeremy Yang  
 - **Developer:** Bivek Sharma Panthi  
@@ -86,13 +86,13 @@ docker run -p 5173:5173 smartfilter-ui
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **BSD-3-Clause License**.
 
 ---
 
-## 👥 Audience
+## Audience
 
 This project is intended for:
 

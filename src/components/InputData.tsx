@@ -1,24 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import "../styles/InputData.css";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://chiltepin.health.unm.edu/smartsfilter/api/v1";
-
-const SMARTS_PRESETS = [
-  { label: "Select a SMARTS preset...", value: "" },
-  { label: "UNM Reactive", value: "unm_reactive.sma" },
-  { label: "Blake Filters", value: "lint_blake-v2.sma" },
-  { label: "Oprea Filters", value: "oprea_filters.sma" },
-  { label: "Alarm NMR", value: "alarmnmr.sma" },
-  { label: "Glaxo Acids", value: "glaxo_acids.sma" },
-  { label: "Glaxo Bases", value: "glaxo_bases.sma" },
-  { label: "Glaxo Electrophile", value: "glaxo_electrophile.sma" },
-  { label: "Glaxo Nucleophile", value: "glaxo_nucleophile.sma" },
-  { label: "Glaxo Reactive", value: "glaxo_reactive.sma" },
-  { label: "Glaxo Unsuitable Leads", value: "glaxo_unsuitable_leads.sma" },
-  { label: "Glaxo Unsuitable NatProd", value: "glaxo_unsuitable_natprod.sma" },
-];
 
 const InputData = ({
   smilesText,
@@ -49,32 +30,8 @@ const InputData = ({
 }) => {
   const smilesFileInput = React.useRef<HTMLInputElement>(null);
   const smartsFileInput = React.useRef<HTMLInputElement>(null);
-  const [loadingPreset, setLoadingPreset] = useState(false);
 
   const presets = ["Pains", "Blake", "Glaxo", "Oprea", "Alarm NMR"];
-
-  const handleLoadSmartsPreset = async (fileName: string) => {
-    if (!fileName) return;
-    setLoadingPreset(true);
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/load_smarts/load?file_name=${encodeURIComponent(fileName)}`
-      );
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: res.statusText }));
-        alert(`Failed to load SMARTS: ${err.error || res.statusText}`);
-        return;
-      }
-      const data = await res.json();
-      if (data.content) {
-        setSmartsText(data.content);
-      }
-    } catch (err) {
-      alert(`Failed to load SMARTS preset: ${(err as Error).message}`);
-    } finally {
-      setLoadingPreset(false);
-    }
-  };
 
   const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -186,28 +143,15 @@ const InputData = ({
           </div>
           {showSmarts && (
             <div className="input-card">
-              <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
-                <button
-                  type="button"
-                  onClick={() => smartsFileInput.current?.click()}
-                  className="btn-upload"
-                >
-                  Upload
-                </button>
-                <select
-                  className="form-select form-select-sm"
-                  style={{ maxWidth: 220 }}
-                  defaultValue=""
-                  disabled={loadingPreset}
-                  onChange={(e) => handleLoadSmartsPreset(e.target.value)}
-                >
-                  {SMARTS_PRESETS.map((p) => (
-                    <option key={p.value} value={p.value}>
-                      {loadingPreset ? "Loading..." : p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <label className="input-label">SMARTS Input (Expert):</label>
+              <button
+                type="button"
+                onClick={() => smartsFileInput.current?.click()}
+                className="btn-upload"
+                style={{ marginBottom: "8px" }}
+              >
+                Upload
+              </button>
               <input
                 type="file"
                 accept=".smi,.txt,.sma,.smarts"
@@ -219,7 +163,7 @@ const InputData = ({
                 rows={8}
                 value={smartsText}
                 onChange={(e) => setSmartsText(e.target.value)}
-                placeholder="Paste SMARTS here or upload a file above"
+                placeholder="Paste SMARTS patterns here (one per line: PATTERN NAME)"
                 className="input-textarea"
               />
             </div>

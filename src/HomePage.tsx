@@ -4,7 +4,7 @@ import SmartsFilterResult from "./components/SmartsFilterResult";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://chiltepin.health.unm.edu/smartsfilter/api/v1";
+  "/smartsfilter/api/v1";
 
 export type MatchResult = {
   name: string;
@@ -273,7 +273,7 @@ function HomePage() {
         if (inputData.filters.includes("Alarm NMR")) await runOptimizedFilter("Alarm NMR", "get_filteralarm");
       }
 
-      // Expert Custom SMARTS mode using POST
+      // Expert Custom SMARTS mode: single-pass through expert_matchcounts (uses FilterCatalog)
       if (isExpert && inputData.smarts?.content?.trim()) {
         let smartsRaw = "";
         if (inputData.smarts.type === "text") {
@@ -282,64 +282,63 @@ function HomePage() {
           smartsRaw = await readFileContent(inputData.smarts.content);
         }
 
-        const customSmartsLines = smartsRaw.split(/\r?\n/).filter((line: string) => line.trim().length > 0);
-        const customSmartsPatterns = customSmartsLines.map((line: string) => {
-          const parts = line.trim().split(/\s+/);
-          return { smarts: parts[0], name: parts[1] || "custom" };
-        });
-
         const payload = {
           SMILES: smilesArray,
           Smile_Names: namesArray,
-          smarts: customSmartsPatterns.map(s => s.smarts),
-          Smart_Names: customSmartsPatterns.map(s => s.name),
+          smarts_text: smartsRaw,
           ...buildExpertParams()
         };
 
-        const expertRes = await createPostRequest(
-          `${API_BASE_URL}/smarts_filter/get_multi_matchcounts`,
-          payload
-        );
+        try {
+          const expertRes = await createPostRequest(
+            `${API_BASE_URL}/smarts_filter/expert_matchcounts`,
+            payload
+          );
 
-        if (expertRes.status !== 200) {
-          const errorText = await expertRes.text();
-          addError(`Error ${expertRes.status} ${expertRes.statusText}: ${errorText}`);
-          return;
-        }
-
-        const expertJson = await expertRes.json();
-        expertJson.forEach((entry: any) => {
-          try {
-            const mol = RDKit.get_mol(entry.smiles);
-            const canon = mol.get_smiles();
-            mol.delete();
-
-            const isFailed = entry.matches.some((match: any) => match.count > 0);
-            const highlightAtomsFlat: number[] = entry.matches
-              .flatMap((match: any) => match.highlight_atoms ?? [])
-              .flat()
-              .filter((x: number): x is number => typeof x === "number");
-            const uniqueHighlightAtoms = Array.from(new Set(highlightAtomsFlat));
-            const matchBooleans = entry.matches.map((match: any) => match.count > 0);
-
-            combinedResults.push({
-              name: entry.name,
-              SMILES: inputCanonMap.get(canon) || canon,
-              Smart: entry.matches
-                .filter((m: any) => m.count > 0)
-                .map((m: any) => m.name)
-                .join(", "),
-              matched: isFailed,
-              failed: isFailed,
-              highlightAtoms: uniqueHighlightAtoms,
-              all_pains_filters: customSmartsPatterns.map((p) => p.name),
-              matches: matchBooleans,
-              filterName: "CUSTOM",
-            });
-          } catch {
-            console.warn("Failed to process EXPERT entry:", entry);
+          if (expertRes.status !== 200) {
+            const errData = await expertRes.json().catch(() => ({ error: "Unknown error" }));
+            addError(`Expert filter error: ${errData.error || "Unknown error"}`);
+            if (errData.invalid?.length) {
+              errData.invalid.forEach((inv: any) => {
+                addError(`Line ${inv.line}: Invalid pattern "${inv.pattern}"`);
+              });
+            }
+            return;
           }
-        });
+
+          const expertData = await expertRes.json();
+          const allFilters: string[] = expertData.all_smarts_filter || [];
+
+          if (expertData.invalid?.length) {
+            expertData.invalid.forEach((inv: any) => {
+              addError(`Warning line ${inv.line}: Skipped invalid pattern "${inv.pattern}"`);
+            });
+          }
+
+          expertData.results.forEach((entry: any) => {
+            try {
+              const mol = RDKit.get_mol(entry.smiles);
+              const canon = mol.get_smiles();
+              mol.delete();
+
+              combinedResults.push({
+                name: entry.name,
+                SMILES: inputCanonMap.get(canon) || canon,
+                Smart: entry.reasons.join(", "),
+                matched: entry.failed,
+                failed: entry.failed,
+                highlightAtoms: entry.highlight_atoms?.flat() ?? [],
+                all_pains_filters: allFilters,
+                matches: allFilters.map((p: string) => entry.reasons.includes(p)),
+                filterName: "CUSTOM",
+              });
+            } catch {
+              console.warn("Failed to process EXPERT entry:", entry);
+            }
+          });
+        } catch (err) {
+          addError(`Failed to run expert filter: ${(err as Error).message}`);
+        }
       }
 
       combinedResults.sort((a, b) => Number(b.failed) - Number(a.failed));

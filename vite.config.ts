@@ -7,6 +7,13 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    port: 5173
+    port: 5173,
+    proxy: {
+      '/smartsfilter/api': {
+        target: 'http://host.docker.internal:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/smartsfilter/, ''),
+      }
+    }
   }
 })

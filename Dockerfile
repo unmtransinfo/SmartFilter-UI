@@ -1,9 +1,10 @@
-FROM node:22-alpine
-ARG ASSET_ROOT='\/smartsfilter'
-ENV ASSET_ROOT=$ASSET_ROOT
+FROM node:24-alpine
 WORKDIR /app
-COPY . .
-RUN npm install
-EXPOSE 5173
+COPY package*.json ./
+RUN npm ci
 
-CMD ["npm", "run", "dev"]
+COPY . .
+RUN npm run build
+
+EXPOSE 5173
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173"]

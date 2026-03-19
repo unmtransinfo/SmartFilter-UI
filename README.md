@@ -45,7 +45,7 @@ API Reference: [SmartFilter API](https://github.com/unmtransinfo/SmartFilter-API
 - **Frontend:** React + TypeScript + Vite  
 - **Cheminformatics:** RDKit.js  
 - **Styling:** TailwindCSS, ShadCN/UI  
-- **Deployment:** Docker + Nginx (frontend), Apache (server proxy)  
+- **Deployment:** Docker + Apache  
 - **API:** SmartFilter API  
 
 ---

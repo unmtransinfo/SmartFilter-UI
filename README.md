@@ -36,7 +36,7 @@ Built with **React + TypeScript + Vite** and powered by **RDKit.js**, SmartFilte
 
 Visit the live app here: [SmartFilter-UI Deployment](https://chiltepin.health.unm.edu/smartsfilter/)  
 
-API Reference: [SmartFilter API](https://github.com/unmtransinfo/SmartFilter-API)  
+API Reference: [SmartFilter API](https://github.com/unmtransinfo/SmartsFilter-API)  
 
 ---
 
